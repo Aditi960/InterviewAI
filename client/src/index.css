@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-body text-gray-800 antialiased;
+    background-color: #fdf5f5;
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-cyan text-gray-900 font-display font-semibold px-6 py-3 rounded-xl
+           hover:shadow-glow transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-gray-200 text-gray-700 font-display font-medium px-6 py-3
+           rounded-xl hover:border-brand-cyan hover:text-brand-cyan transition-all duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-shadow duration-300;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-200 font-body text-sm
+           focus:outline-none focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/20
+           placeholder:text-gray-400 transition-all duration-200 bg-white;
+  }
+
+  .badge-easy {
+    @apply bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide;
+  }
+
+  .badge-medium {
+    @apply bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide;
+  }
+
+  .badge-hard {
+    @apply bg-red-100 text-red-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wide;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 font-body font-medium
+           hover:bg-gray-50 transition-all duration-150 cursor-pointer;
+  }
+
+  .sidebar-link.active {
+    @apply bg-brand-cyan text-gray-900 hover:bg-brand-cyan;
+  }
+
+  .stat-card {
+    @apply card flex items-center gap-4;
+  }
+
+  .stat-icon {
+    @apply w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Animation delays for staggered entries */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Chart tooltip override */
+.recharts-tooltip-wrapper {
+  outline: none !important;
+}
