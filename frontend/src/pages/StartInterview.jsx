@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Vapi from '@vapi-ai/web';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { Upload, Mic, MicOff, ChevronRight, ChevronLeft, Send, Clock, Volume2, VolumeX } from 'lucide-react';
@@ -27,6 +28,16 @@ const StartInterview = () => {
   const [muted, setMuted] = useState(false);
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
+  const vapiRef = useRef(null);
+
+  useEffect(() => {
+    vapiRef.current = new Vapi(import.meta.env.VITE_VAPI_API_KEY);
+    return () => {
+      if (vapiRef.current) {
+        vapiRef.current.stop();
+      }
+    };
+  }, []);
 
   // ── Groq Whisper voice recorder (works in Brave, no Google dependency) ─────
   const { isRecording, isTranscribing, toggleRecording, stopRecording } = useVoiceRecorder({
@@ -43,7 +54,9 @@ const StartInterview = () => {
     return () => {
       clearInterval(timerRef.current);
       stopRecording();
-      window.speechSynthesis.cancel();
+      if (vapiRef.current) {
+        vapiRef.current.stop();
+      }
     };
   }, [step]);
 
@@ -52,15 +65,27 @@ const StartInterview = () => {
     const question = session.questions[currentQ]?.question;
     if (!question) return;
 
-    window.speechSynthesis.cancel();
-    if (!muted) {
-      const utterance = new SpeechSynthesisUtterance(question);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      window.speechSynthesis.speak(utterance);
+    if (vapiRef.current) {
+      vapiRef.current.stop();
     }
-    return () => window.speechSynthesis.cancel();
+    if (!muted && vapiRef.current) {
+      vapiRef.current.start({
+        model: {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+        },
+        voice: {
+          provider: 'elevenlabs',
+          voiceId: 'paula',
+        },
+        firstMessage: question,
+      });
+    }
+    return () => {
+      if (vapiRef.current) {
+        vapiRef.current.stop();
+      }
+    };
   }, [currentQ, session, muted]);
 
   const formatTime = (s) =>
