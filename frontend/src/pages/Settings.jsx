@@ -37,7 +37,7 @@ const Settings = () => {
             </div>
             <div>
               <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', marginBottom: 6 }}>Email</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: darkMode ? '#0f172a' : '#f8fafc', border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, fontSize: 14, color: darkMode ? '#94a3b8' : '#94a3b8' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: darkMode ? '#0f172a' : '#f8fafc', border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, fontSize: 14, color: '#94a3b8' }}>
                 <Mail size={14} />
                 {user?.email}
               </div>
