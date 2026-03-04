@@ -13,10 +13,19 @@ body {
   margin: 0;
 }
 
+html.dark body {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+html.dark ::-webkit-scrollbar-track { background: #1e293b; }
+html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
 @layer utilities {
   .glass {
@@ -29,6 +38,14 @@ body {
     border-radius: 16px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
   }
+}
+
+html.dark .glass {
+  background: rgba(30, 41, 59, 0.85);
+}
+
+html.dark .card {
+  background: #1e293b;
 }
 
 html, body, #root {
