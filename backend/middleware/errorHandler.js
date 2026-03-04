@@ -1,4 +1,4 @@
-export const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
   console.error('Error:', err);
 
   if (err.name === 'ValidationError') {
@@ -23,10 +23,12 @@ export const errorHandler = (err, req, res, next) => {
   });
 };
 
-export class AppError extends Error {
+class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
     Error.captureStackTrace(this, this.constructor);
   }
 }
+
+module.exports = { errorHandler, AppError };
