@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const topicAnalysisSchema = new mongoose.Schema(
   {
@@ -12,16 +12,10 @@ const topicAnalysisSchema = new mongoose.Schema(
 const questionSchema = new mongoose.Schema(
   {
     question: { type: String, required: true },
-    topic: { type: String, required: true },
-    difficulty: { type: String },
-  },
-  { _id: false }
-);
-
-const answerSchema = new mongoose.Schema(
-  {
-    questionIndex: { type: Number, required: true },
-    answer: { type: String, required: true },
+    topic: { type: String },
+    answer: { type: String, default: '' },
+    evaluation: { type: String, default: '' },
+    score: { type: Number, default: 0, min: 0, max: 10 },
   },
   { _id: false }
 );
@@ -29,6 +23,10 @@ const answerSchema = new mongoose.Schema(
 const interviewSessionSchema = new mongoose.Schema(
   {
     userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    supabaseId: {
       type: String,
       required: true,
       index: true,
@@ -43,12 +41,7 @@ const interviewSessionSchema = new mongoose.Schema(
       required: true,
       enum: ['EASY', 'MEDIUM', 'HARD'],
     },
-    resumeUrl: {
-      type: String,
-      default: null,
-    },
     questions: [questionSchema],
-    answers: [answerSchema],
     score: {
       type: Number,
       min: 0,
@@ -64,8 +57,12 @@ const interviewSessionSchema = new mongoose.Schema(
     topicAnalysis: [topicAnalysisSchema],
     status: {
       type: String,
-      enum: ['in_progress', 'completed', 'abandoned'],
-      default: 'in_progress',
+      enum: ['in-progress', 'completed', 'abandoned'],
+      default: 'in-progress',
+    },
+    duration: {
+      type: Number,
+      default: 0,
     },
   },
   {
@@ -73,8 +70,7 @@ const interviewSessionSchema = new mongoose.Schema(
   }
 );
 
-// Compound indexes for performance
-interviewSessionSchema.index({ userId: 1, createdAt: -1 });
-interviewSessionSchema.index({ userId: 1, status: 1 });
+interviewSessionSchema.index({ supabaseId: 1, createdAt: -1 });
+interviewSessionSchema.index({ supabaseId: 1, status: 1 });
 
-export default mongoose.model('InterviewSession', interviewSessionSchema);
+module.exports = mongoose.model('InterviewSession', interviewSessionSchema);

@@ -1,12 +1,10 @@
-import InterviewSession from '../models/InterviewSession.js';
+const InterviewSession = require('../models/InterviewSession');
 
-export const getDashboardStats = async (req, res) => {
+const getDashboardStats = async (req, res) => {
   try {
     const userId = req.user.supabaseId;
 
-    // Run all aggregations in parallel for performance
     const [statsResult, recentSessions, scoreHistory, topicPerformance] = await Promise.all([
-      // Overall stats
       InterviewSession.aggregate([
         { $match: { userId, status: 'completed' } },
         {
@@ -19,20 +17,17 @@ export const getDashboardStats = async (req, res) => {
         },
       ]),
 
-      // Recent sessions (last 5)
       InterviewSession.find({ userId, status: 'completed' })
         .sort({ createdAt: -1 })
         .limit(5)
         .select('role difficulty score createdAt topicAnalysis'),
 
-      // Score history (last 30)
       InterviewSession.find({ userId, status: 'completed' })
         .sort({ createdAt: -1 })
         .limit(30)
         .select('score createdAt')
         .then(sessions => sessions.reverse()),
 
-      // Topic performance aggregation
       InterviewSession.aggregate([
         { $match: { userId, status: 'completed' } },
         { $unwind: '$topicAnalysis' },
@@ -48,8 +43,6 @@ export const getDashboardStats = async (req, res) => {
     ]);
 
     const stats = statsResult[0] || { totalInterviews: 0, averageScore: 0, bestScore: 0 };
-
-    // Count weak topics (avg score < 6)
     const weakTopics = topicPerformance.filter(t => t.avgScore < 6);
 
     res.json({
@@ -76,3 +69,5 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+module.exports = { getDashboardStats };

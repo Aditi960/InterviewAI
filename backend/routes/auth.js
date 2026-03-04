@@ -1,10 +1,9 @@
-import express from 'express';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-import User from '../models/User.js';
-
+const express = require('express');
 const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
+const User = require('../models/User');
 
-// GET /api/auth/profile - get current user profile
+// GET /api/auth/profile
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
     res.json({ user: req.user });
@@ -13,7 +12,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/auth/profile - update user profile
+// PUT /api/auth/profile
 router.put('/profile', authMiddleware, async (req, res) => {
   try {
     const { name, preferences } = req.body;
@@ -28,4 +27,4 @@ router.put('/profile', authMiddleware, async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;
