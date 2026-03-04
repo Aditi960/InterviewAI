@@ -2,11 +2,11 @@ const InterviewSession = require('../models/InterviewSession');
 
 const getDashboardStats = async (req, res) => {
   try {
-    const userId = req.user.supabaseId;
+    const supabaseId = req.user.supabaseId;
 
     const [statsResult, recentSessions, scoreHistory, topicPerformance] = await Promise.all([
       InterviewSession.aggregate([
-        { $match: { userId, status: 'completed' } },
+        { $match: { supabaseId, status: 'completed' } },
         {
           $group: {
             _id: null,
@@ -16,20 +16,17 @@ const getDashboardStats = async (req, res) => {
           },
         },
       ]),
-
-      InterviewSession.find({ userId, status: 'completed' })
+      InterviewSession.find({ supabaseId, status: 'completed' })
         .sort({ createdAt: -1 })
         .limit(5)
         .select('role difficulty score createdAt topicAnalysis'),
-
-      InterviewSession.find({ userId, status: 'completed' })
+      InterviewSession.find({ supabaseId, status: 'completed' })
         .sort({ createdAt: -1 })
         .limit(30)
         .select('score createdAt')
         .then(sessions => sessions.reverse()),
-
       InterviewSession.aggregate([
-        { $match: { userId, status: 'completed' } },
+        { $match: { supabaseId, status: 'completed' } },
         { $unwind: '$topicAnalysis' },
         {
           $group: {
