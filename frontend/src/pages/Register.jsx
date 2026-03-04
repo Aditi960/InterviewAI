@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { Zap, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
   const { signUp, signInWithGoogle } = useAuth();
+  const { darkMode } = useTheme();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [showPass, setShowPass] = useState(false);
@@ -52,9 +54,9 @@ const Register = () => {
       </div>
 
       {/* Right — full width on mobile */}
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-10" style={{ background: '#fafafa' }}>
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-10" style={{ background: darkMode ? '#0f172a' : '#fafafa' }}>
         <div className="w-full max-w-[380px]">
-          <h3 className="break-words" style={{ fontFamily: 'Syne, sans-serif', fontSize: 26, fontWeight: 700, marginBottom: 6, color: '#1e293b' }}>Create an account</h3>
+          <h3 className="break-words" style={{ fontFamily: 'Syne, sans-serif', fontSize: 26, fontWeight: 700, marginBottom: 6, color: darkMode ? '#f1f5f9' : '#1e293b' }}>Create an account</h3>
           <p style={{ color: '#94a3b8', fontSize: 14, marginBottom: 32 }}>Start your AI interview journey today.</p>
 
           <form onSubmit={handleSubmit}>
@@ -63,7 +65,7 @@ const Register = () => {
               { label: 'Email', key: 'email', type: 'email', placeholder: 'you@example.com', icon: Mail },
             ].map(({ label, key, type, placeholder, icon: Icon }) => (
               <div key={key} style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 6 }}>{label}</label>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', marginBottom: 6 }}>{label}</label>
                 <div style={{ position: 'relative' }}>
                   <Icon size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                   <input
@@ -72,14 +74,14 @@ const Register = () => {
                     onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
                     placeholder={placeholder}
                     className="w-full"
-                    style={{ paddingLeft: 38, paddingRight: 14, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
+                    style={{ paddingLeft: 38, paddingRight: 14, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: darkMode ? '#1e293b' : 'white', ...(darkMode ? { color: '#f1f5f9' } : {}) }}
                   />
                 </div>
               </div>
             ))}
 
             <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 6 }}>Password</label>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', marginBottom: 6 }}>Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                 <input
@@ -88,7 +90,7 @@ const Register = () => {
                   onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
                   placeholder="Create a password"
                   className="w-full"
-                  style={{ paddingLeft: 38, paddingRight: 40, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
+                  style={{ paddingLeft: 38, paddingRight: 40, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: darkMode ? '#1e293b' : 'white', ...(darkMode ? { color: '#f1f5f9' } : {}) }}
                 />
                 <button type="button" onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Hide password' : 'Show password'} className="min-w-[44px] min-h-[44px] flex items-center justify-center" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0 }}>
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -105,7 +107,7 @@ const Register = () => {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#475569', marginBottom: 6 }}>Confirm Password</label>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', marginBottom: 6 }}>Confirm Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                 <input
@@ -114,7 +116,7 @@ const Register = () => {
                   onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))}
                   placeholder="Repeat your password"
                   className="w-full"
-                  style={{ paddingLeft: 38, paddingRight: 14, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: `1.5px solid ${form.confirm && form.confirm !== form.password ? '#ef4444' : '#e2e8f0'}`, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
+                  style={{ paddingLeft: 38, paddingRight: 14, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: `1.5px solid ${form.confirm && form.confirm !== form.password ? '#ef4444' : darkMode ? '#334155' : '#e2e8f0'}`, fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: darkMode ? '#1e293b' : 'white', ...(darkMode ? { color: '#f1f5f9' } : {}) }}
                 />
               </div>
             </div>
