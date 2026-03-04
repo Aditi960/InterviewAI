@@ -1,21 +1,20 @@
-import express from 'express';
-import multer from 'multer';
-import { authMiddleware } from '../middleware/authMiddleware.js';
-import {
+const express = require('express');
+const router = express.Router();
+const authMiddleware = require('../middleware/authMiddleware');
+const {
   startInterview,
   submitInterview,
-  getInterviewHistory,
-  getInterviewById,
+  getHistory,
+  getSession,
   transcribeAudio,
-} from '../controllers/interviewController.js';
+} = require('../controllers/interviewController');
 
-const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
+router.use(authMiddleware);
 
-router.post('/start', authMiddleware, upload.single('resume'), startInterview);
-router.post('/submit', authMiddleware, submitInterview);
-router.post('/transcribe', authMiddleware, transcribeAudio);
-router.get('/history', authMiddleware, getInterviewHistory);
-router.get('/:id', authMiddleware, getInterviewById);
+router.post('/start', startInterview);
+router.post('/submit', submitInterview);
+router.post('/transcribe', transcribeAudio);  // must be before /:id
+router.get('/history', getHistory);
+router.get('/:id', getSession);               // wildcard always last
 
-export default router;
+module.exports = router;
