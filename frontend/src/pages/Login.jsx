@@ -39,16 +39,16 @@ const Login = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
-      {/* Left panel */}
-      <div style={{ flex: 1, background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%)', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 40px', color: 'white' }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'white', marginBottom: 60 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="min-h-screen flex flex-col md:flex-row" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+      {/* Left panel — hidden on mobile */}
+      <div className="hidden md:flex md:w-1/2 flex-col justify-center p-10 lg:px-10 text-white" style={{ background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%)' }}>
+        <Link to="/" className="flex items-center gap-2.5 no-underline text-white mb-14">
+          <div className="w-9 h-9 rounded-[10px] flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
             <Zap size={18} fill="white" />
           </div>
           <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 20 }}>InterviewAI</span>
         </Link>
-        <h2 style={{ fontFamily: 'Syne, sans-serif', fontSize: 36, fontWeight: 800, marginBottom: 16, lineHeight: 1.2 }}>
+        <h2 className="break-words" style={{ fontFamily: 'Syne, sans-serif', fontSize: 36, fontWeight: 800, marginBottom: 16, lineHeight: 1.2 }}>
           Your AI-powered
           <br />interview coach
         </h2>
@@ -63,10 +63,10 @@ const Login = () => {
         ))}
       </div>
 
-      {/* Right panel */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, background: '#fafafa' }}>
-        <div style={{ width: '100%', maxWidth: 380 }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontSize: 26, fontWeight: 700, marginBottom: 6, color: '#1e293b' }}>Welcome back</h3>
+      {/* Right panel — full width on mobile */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-10" style={{ background: '#fafafa' }}>
+        <div className="w-full max-w-[380px]">
+          <h3 className="break-words" style={{ fontFamily: 'Syne, sans-serif', fontSize: 26, fontWeight: 700, marginBottom: 6, color: '#1e293b' }}>Welcome back</h3>
           <p style={{ color: '#94a3b8', fontSize: 14, marginBottom: 32 }}>Enter your details to access your account.</p>
 
           <form onSubmit={handleSubmit}>
@@ -77,7 +77,8 @@ const Login = () => {
                 <input
                   type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  style={{ width: '100%', paddingLeft: 38, paddingRight: 14, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
+                  className="w-full"
+                  style={{ paddingLeft: 38, paddingRight: 14, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
                 />
               </div>
             </div>
@@ -92,9 +93,10 @@ const Login = () => {
                 <input
                   type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  style={{ width: '100%', paddingLeft: 38, paddingRight: 40, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
+                  className="w-full"
+                  style={{ paddingLeft: 38, paddingRight: 40, paddingTop: 11, paddingBottom: 11, borderRadius: 12, border: '1.5px solid #e2e8f0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', background: 'white' }}
                 />
-                <button type="button" onClick={() => setShowPass(!showPass)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0 }}>
+                <button type="button" onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Hide password' : 'Show password'} className="min-w-[44px] min-h-[44px] flex items-center justify-center" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0 }}>
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -102,7 +104,8 @@ const Login = () => {
 
             <button
               type="submit" disabled={loading}
-              style={{ width: '100%', background: loading ? '#94a3b8' : '#06b6d4', color: 'white', border: 'none', borderRadius: 12, padding: '12px', fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
+              className="w-full min-h-[44px]"
+              style={{ background: loading ? '#94a3b8' : '#06b6d4', color: 'white', border: 'none', borderRadius: 12, padding: '12px', fontSize: 15, fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
@@ -118,7 +121,8 @@ const Login = () => {
             <button
               key={provider}
               onClick={provider === 'Google' ? handleGoogle : undefined}
-              style={{ width: '100%', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '10px', fontSize: 14, fontWeight: 500, cursor: 'pointer', marginBottom: 10, fontFamily: 'inherit', color: '#1e293b', transition: 'border-color 0.15s' }}
+              className="w-full min-h-[44px]"
+              style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: 12, padding: '10px', fontSize: 14, fontWeight: 500, cursor: 'pointer', marginBottom: 10, fontFamily: 'inherit', color: '#1e293b', transition: 'border-color 0.15s' }}
             >
               Continue with {provider}
             </button>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Zap, Mic, BarChart3, ArrowRight, Play, CheckCircle, Star } from 'lucide-react';
+import Navbar from '../components/Navbar';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -29,23 +30,7 @@ const Landing = () => {
   return (
     <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', background: '#fdf6f6', minHeight: '100vh' }}>
       {/* Nav */}
-      <nav style={{ background: 'transparent', padding: '16px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 10, background: '#06b6d4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Zap size={16} color="white" fill="white" />
-          </div>
-          <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 18 }}>InterviewAI</span>
-        </div>
-        <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-          <a href="#features" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Features</a>
-          <a href="#how" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>How It Works</a>
-          <a href="#students" style={{ color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>For Students</a>
-          <Link to="/login" style={{ color: '#1e293b', textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>Log In</Link>
-          <Link to="/register" style={{ background: '#06b6d4', color: 'white', padding: '8px 20px', borderRadius: 12, textDecoration: 'none', fontSize: 14, fontWeight: 600 }}>
-            Get Started
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section style={{ textAlign: 'center', padding: '80px 40px 40px', background: 'linear-gradient(180deg, #fef9c3 0%, #fdf6f6 100%)', position: 'relative', overflow: 'hidden' }}>
