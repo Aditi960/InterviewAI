@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
-import { Upload, Mic, MicOff, ChevronRight, ChevronLeft, Send, Clock } from 'lucide-react';
+import { Upload, Mic, MicOff, ChevronRight, ChevronLeft, Send, Clock, Volume2, VolumeX } from 'lucide-react';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
 
 const ROLES = ['Frontend Developer', 'Backend Engineer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist'];
@@ -24,6 +24,7 @@ const StartInterview = () => {
   const [currentQ, setCurrentQ] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [timer, setTimer] = useState(0);
+  const [muted, setMuted] = useState(false);
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
 
@@ -42,8 +43,25 @@ const StartInterview = () => {
     return () => {
       clearInterval(timerRef.current);
       stopRecording();
+      window.speechSynthesis.cancel();
     };
   }, [step]);
+
+  useEffect(() => {
+    if (!session) return;
+    const question = session.questions[currentQ]?.question;
+    if (!question) return;
+
+    window.speechSynthesis.cancel();
+    if (!muted) {
+      const utterance = new SpeechSynthesisUtterance(question);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+    return () => window.speechSynthesis.cancel();
+  }, [currentQ, session, muted]);
 
   const formatTime = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
@@ -237,6 +255,17 @@ const StartInterview = () => {
             <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
               {formatTime(timer)}
             </span>
+            <button
+              onClick={() => setMuted(m => !m)}
+              title={muted ? 'Unmute question voice' : 'Mute question voice'}
+              aria-label={muted ? 'Unmute question voice' : 'Mute question voice'}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', padding: 4,
+              }}
+            >
+              {muted ? <VolumeX size={16} color="#94a3b8" /> : <Volume2 size={16} color="#06b6d4" />}
+            </button>
           </div>
         </div>
 
