@@ -101,32 +101,32 @@ const Layout = ({ children }) => {
       )}
 
       {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Topbar */}
-        <header className="flex items-center gap-4 px-6 py-4 bg-white border-b border-slate-100">
-          <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
+        <header className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-slate-100">
+          <button className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={() => setSidebarOpen(true)}>
             <Menu size={20} className="text-slate-600" />
           </button>
 
           {/* Search */}
-          <div className="flex-1 max-w-xs relative">
+          <div className="flex-1 max-w-[160px] sm:max-w-xs relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={searchVal}
               onChange={e => setSearchVal(e.target.value)}
-              placeholder="Search sessions, topics..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-400 transition-colors"
+              placeholder="Search..."
+              className="w-full pl-9 pr-3 sm:pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-400 transition-colors"
             />
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
-            <button className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors relative">
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <button className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors relative shrink-0">
               <Bell size={16} className="text-slate-500" />
               <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full" style={{ background: '#f97316' }} />
             </button>
 
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white cursor-pointer"
+              className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white cursor-pointer shrink-0"
               style={{ background: '#06b6d4' }}
               title={user?.email}
             >
@@ -145,7 +145,7 @@ const Layout = ({ children }) => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
       </div>

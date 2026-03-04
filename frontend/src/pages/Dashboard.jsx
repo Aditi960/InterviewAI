@@ -6,13 +6,13 @@ import toast from 'react-hot-toast';
 import { TrendingUp, Award, Target, AlertTriangle, Calendar, ChevronRight } from 'lucide-react';
 
 const StatCard = ({ label, value, sub, color, icon: Icon }) => (
-  <div style={{ background: 'white', borderRadius: 16, padding: '20px 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', gap: 16, flex: 1, minWidth: 160 }}>
-    <div style={{ width: 48, height: 48, borderRadius: 14, background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+  <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-[20px_24px] min-w-0" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}20` }}>
       <Icon size={20} color={color} />
     </div>
-    <div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: '#1e293b', lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>{label}</div>
+    <div className="min-w-0">
+      <div className="text-lg sm:text-2xl font-bold leading-none" style={{ color: '#1e293b' }}>{value}</div>
+      <div className="text-xs sm:text-[13px] mt-1 truncate" style={{ color: '#94a3b8' }}>{label}</div>
     </div>
   </div>
 );
@@ -55,12 +55,12 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 28, fontWeight: 700, color: '#1e293b', margin: 0 }}>Dashboard</h1>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Dashboard</h1>
       </div>
 
       {/* Stats cards */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <StatCard label="Total Interviews" value={stats?.totalInterviews || 0} color="#06b6d4" icon={TrendingUp} />
         <StatCard label="Average Score" value={`${stats?.averageScore || 0}/10`} color="#eab308" icon={Target} />
         <StatCard label="Best Score" value={`${stats?.bestScore || 0}/10`} color="#22c55e" icon={Award} />
@@ -68,15 +68,16 @@ const Dashboard = () => {
       </div>
 
       {/* Charts row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: 20, marginBottom: 24 }}>
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4 sm:gap-5 mb-4 sm:mb-6">
         {/* Score trend */}
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: '#1e293b', margin: 0 }}>Score Improvement</h3>
+        <div className="p-4 sm:p-6" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-5">
+            <h3 className="text-sm sm:text-base font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Score Improvement</h3>
             <select
               value={period}
               onChange={e => setPeriod(e.target.value)}
-              style={{ fontSize: 13, color: '#64748b', border: '1px solid #e2e8f0', borderRadius: 8, padding: '4px 8px', outline: 'none' }}
+              className="text-xs sm:text-[13px] self-start sm:self-auto"
+              style={{ color: '#64748b', border: '1px solid #e2e8f0', borderRadius: 8, padding: '4px 8px', outline: 'none' }}
             >
               <option>Last 30 Days</option>
               <option>Last 90 Days</option>
@@ -92,8 +93,8 @@ const Dashboard = () => {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 10]} tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis domain={[0, 10]} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 13 }}
                 formatter={val => [`${val}/10`, 'Score']}
@@ -104,8 +105,8 @@ const Dashboard = () => {
         </div>
 
         {/* Topic performance */}
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: '#1e293b', margin: '0 0 20px' }}>Topic Performance</h3>
+        <div className="p-4 sm:p-6" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 className="text-sm sm:text-base font-bold mb-4 sm:mb-5" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b', margin: '0 0 20px' }}>Topic Performance</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stats?.topicPerformance || []} barCategoryGap="25%">
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal vertical={false} />
@@ -126,65 +127,108 @@ const Dashboard = () => {
       </div>
 
       {/* Recent sessions */}
-      <div style={{ background: 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: '#1e293b', margin: 0 }}>Recent Sessions</h3>
+      <div className="p-4 sm:p-6" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center justify-between mb-4 sm:mb-5">
+          <h3 className="text-sm sm:text-base font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Recent Sessions</h3>
           <button
             onClick={() => navigate('/history')}
-            style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: '#475569', display: 'flex', alignItems: 'center', gap: 4 }}
+            className="min-h-[44px] flex items-center gap-1 px-3 sm:px-3.5 text-xs sm:text-[13px] font-medium"
+            style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer', color: '#475569' }}
           >
             View All <ChevronRight size={14} />
           </button>
         </div>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-              {['ROLE CONTEXT', 'DIFFICULTY', 'SCORE', 'DATE', 'ACTION'].map(h => (
-                <th key={h} style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textAlign: 'left', padding: '0 8px 12px', letterSpacing: '0.05em' }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {(stats?.recentSessions || []).length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: 14 }}>
-                  No sessions yet.{' '}
-                  <button onClick={() => navigate('/start-interview')} style={{ color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', fontSize: 14 }}>
-                    Start your first interview →
-                  </button>
-                </td>
+        {/* Mobile card view */}
+        <div className="block sm:hidden">
+          {(stats?.recentSessions || []).length === 0 && (
+            <div className="text-center py-10 text-sm" style={{ color: '#94a3b8' }}>
+              No sessions yet.{' '}
+              <button onClick={() => navigate('/start-interview')} style={{ color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', fontSize: 14 }}>
+                Start your first interview →
+              </button>
+            </div>
+          )}
+          {(stats?.recentSessions || []).map((session) => (
+            <div key={session.id} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-b-0">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ background: '#f1f5f9' }}>💼</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold truncate" style={{ color: '#1e293b' }}>{session.role}</div>
+                <div className="flex items-center gap-2 mt-1">
+                  <DifficultyBadge d={session.difficulty} />
+                  <span className="text-[11px]" style={{ color: '#94a3b8' }}>
+                    {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-base font-bold" style={{ color: '#1e293b' }}>{session.score}/10</div>
+              </div>
+              <button
+                onClick={() => navigate(`/history/${session.id}`)}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
+                style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                <ChevronRight size={18} color="#cbd5e1" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table view */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+                {['ROLE CONTEXT', 'DIFFICULTY', 'SCORE', 'DATE', 'ACTION'].map(h => (
+                  <th key={h} style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textAlign: 'left', padding: '0 8px 12px', letterSpacing: '0.05em' }}>{h}</th>
+                ))}
               </tr>
-            )}
-            {(stats?.recentSessions || []).map((session, i) => (
-              <tr key={session.id} style={{ borderBottom: i < stats.recentSessions.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                <td style={{ padding: '14px 8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💼</div>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>{session.role}</div>
-                      <div style={{ fontSize: 12, color: '#94a3b8' }}>{session.difficulty === 'EASY' ? 'Fresher' : session.difficulty === 'HARD' ? 'Experienced' : 'Mid'} Level</div>
+            </thead>
+            <tbody>
+              {(stats?.recentSessions || []).length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: 14 }}>
+                    No sessions yet.{' '}
+                    <button onClick={() => navigate('/start-interview')} style={{ color: '#06b6d4', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, fontFamily: 'inherit', fontSize: 14 }}>
+                      Start your first interview →
+                    </button>
+                  </td>
+                </tr>
+              )}
+              {(stats?.recentSessions || []).map((session, i) => (
+                <tr key={session.id} style={{ borderBottom: i < stats.recentSessions.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                  <td style={{ padding: '14px 8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💼</div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>{session.role}</div>
+                        <div style={{ fontSize: 12, color: '#94a3b8' }}>{session.difficulty === 'EASY' ? 'Fresher' : session.difficulty === 'HARD' ? 'Experienced' : 'Mid'} Level</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td style={{ padding: '14px 8px' }}><DifficultyBadge d={session.difficulty} /></td>
-                <td style={{ padding: '14px 8px', fontWeight: 700, fontSize: 15, color: '#1e293b' }}>{session.score}/10</td>
-                <td style={{ padding: '14px 8px', fontSize: 13, color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Calendar size={13} />
-                  {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </td>
-                <td style={{ padding: '14px 8px' }}>
-                  <button
-                    onClick={() => navigate(`/history/${session.id}`)}
-                    style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: '#475569', whiteSpace: 'nowrap' }}
-                  >
-                    View Report
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                  <td style={{ padding: '14px 8px' }}><DifficultyBadge d={session.difficulty} /></td>
+                  <td style={{ padding: '14px 8px', fontWeight: 700, fontSize: 15, color: '#1e293b' }}>{session.score}/10</td>
+                  <td style={{ padding: '14px 8px', fontSize: 13, color: '#64748b' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Calendar size={13} />
+                      {new Date(session.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </td>
+                  <td style={{ padding: '14px 8px' }}>
+                    <button
+                      onClick={() => navigate(`/history/${session.id}`)}
+                      className="min-h-[44px]"
+                      style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: '#475569', whiteSpace: 'nowrap' }}
+                    >
+                      View Report
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
