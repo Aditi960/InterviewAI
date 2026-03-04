@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from 'recharts';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
+import { useTheme } from '../context/ThemeContext';
 
 const Analytics = () => {
+  const { darkMode } = useTheme();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +28,11 @@ const Analytics = () => {
 
   return (
     <div>
-      <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 28, fontWeight: 700, color: '#1e293b', marginBottom: 24 }}>Analytics</h1>
+      <h1 style={{ fontFamily: 'Syne, sans-serif', fontSize: 28, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b', marginBottom: 24 }}>Analytics</h1>
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 20 }}>
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: '#1e293b', marginBottom: 20 }}>Score Trend</h3>
+        <div style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: darkMode ? '#f1f5f9' : '#1e293b', marginBottom: 20 }}>Score Trend</h3>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={stats.scoreHistory}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -42,8 +44,8 @@ const Analytics = () => {
           </ResponsiveContainer>
         </div>
 
-        <div style={{ background: 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: '#1e293b', marginBottom: 20 }}>Topic Distribution</h3>
+        <div style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: darkMode ? '#f1f5f9' : '#1e293b', marginBottom: 20 }}>Topic Distribution</h3>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={stats.topicPerformance} dataKey="average" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, value }) => `${name}: ${value}`} labelLine={false} fontSize={10}>
@@ -59,12 +61,12 @@ const Analytics = () => {
 
       {/* Weak topics highlight */}
       {stats.topicPerformance.filter(t => t.average < 6).length > 0 && (
-        <div style={{ background: '#fef2f2', borderRadius: 16, padding: 20, border: '1px solid #fee2e2', marginBottom: 20 }}>
+        <div style={{ background: darkMode ? '#451a1a' : '#fef2f2', borderRadius: 16, padding: 20, border: darkMode ? '1px solid #7f1d1d' : '1px solid #fee2e2', marginBottom: 20 }}>
           <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 15, color: '#ef4444', marginBottom: 12 }}>⚠️ Weak Topics (Score below 6/10)</h3>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {stats.topicPerformance.filter(t => t.average < 6).map(t => (
-              <div key={t.name} style={{ background: 'white', borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b' }}>{t.name}</span>
+              <div key={t.name} style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: darkMode ? '#f1f5f9' : '#1e293b' }}>{t.name}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#ef4444' }}>{t.average}/10</span>
               </div>
             ))}
@@ -72,8 +74,8 @@ const Analytics = () => {
         </div>
       )}
 
-      <div style={{ background: 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: '#1e293b', marginBottom: 20 }}>Topic Performance Comparison</h3>
+      <div style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, padding: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16, color: darkMode ? '#f1f5f9' : '#1e293b', marginBottom: 20 }}>Topic Performance Comparison</h3>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={stats.topicPerformance} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
