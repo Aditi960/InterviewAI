@@ -35,3 +35,8 @@ html, body, #root {
   overflow-x: hidden;
   max-width: 100vw;
 }
+
+h1, h2, h3, h4, h5, h6, p, span, a, label {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
