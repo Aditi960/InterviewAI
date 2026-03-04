@@ -68,6 +68,9 @@ const StartInterview = () => {
     if (vapiRef.current) {
       vapiRef.current.stop();
     }
+    console.log('Vapi key:', import.meta.env.VITE_VAPI_API_KEY);
+    console.log('Vapi instance:', vapiRef.current);
+    console.log('Question to speak:', session?.questions[currentQ]?.question);
     if (!muted) {
       vapiRef.current?.say(session.questions[currentQ]?.question, true);
     }
