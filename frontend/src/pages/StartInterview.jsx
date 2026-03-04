@@ -68,18 +68,8 @@ const StartInterview = () => {
     if (vapiRef.current) {
       vapiRef.current.stop();
     }
-    if (!muted && vapiRef.current) {
-      vapiRef.current.start({
-        model: {
-          provider: 'openai',
-          model: 'gpt-4o-mini',
-        },
-        voice: {
-          provider: 'elevenlabs',
-          voiceId: 'paula',
-        },
-        firstMessage: question,
-      });
+    if (!muted) {
+      vapiRef.current?.say(session.questions[currentQ]?.question, true);
     }
     return () => {
       if (vapiRef.current) {
