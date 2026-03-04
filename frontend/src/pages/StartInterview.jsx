@@ -72,7 +72,30 @@ const StartInterview = () => {
     console.log('Vapi instance:', vapiRef.current);
     console.log('Question to speak:', session?.questions[currentQ]?.question);
     if (!muted) {
-      vapiRef.current?.say(session.questions[currentQ]?.question, true);
+      vapiRef.current?.stop();
+      vapiRef.current?.start({
+        transcriber: {
+          provider: "deepgram",
+          model: "nova-2",
+          language: "en",
+        },
+        model: {
+          provider: "openai",
+          model: "gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content: `Read this question exactly, word for word, then stop: "${session.questions[currentQ]?.question}"`,
+            },
+          ],
+        },
+        voice: {
+          provider: "elevenlabs",
+          voiceId: "paula",
+        },
+        firstMessage: session.questions[currentQ]?.question,
+        firstMessageMode: "assistant-speaks-first-with-model-generated-message",
+      });
     }
     return () => {
       if (vapiRef.current) {
