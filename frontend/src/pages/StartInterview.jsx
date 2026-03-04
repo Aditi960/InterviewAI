@@ -5,6 +5,7 @@ import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { Upload, Mic, MicOff, ChevronRight, ChevronLeft, Send, Clock, Volume2, VolumeX } from 'lucide-react';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
+import { useTheme } from '../context/ThemeContext';
 
 const ROLES = ['Frontend Developer', 'Backend Engineer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist'];
 const DIFFICULTIES = [
@@ -15,6 +16,7 @@ const DIFFICULTIES = [
 
 const StartInterview = () => {
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [step, setStep] = useState(1);
   const [role, setRole] = useState('');
   const [difficulty, setDifficulty] = useState('');
@@ -168,7 +170,7 @@ const StartInterview = () => {
 
   if (step === 1) return (
     <div className="max-w-[720px] mx-auto">
-      <h1 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>
+      <h1 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
         Start New Interview
       </h1>
       <p className="text-sm sm:text-[15px] mb-6 sm:mb-8" style={{ color: '#94a3b8' }}>
@@ -176,8 +178,8 @@ const StartInterview = () => {
       </p>
 
       {/* Role */}
-      <div className="p-4 sm:p-6 mb-4 sm:mb-5" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <h3 className="text-sm sm:text-[15px] font-bold mb-3 sm:mb-4" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>
+      <div className="p-4 sm:p-6 mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <h3 className="text-sm sm:text-[15px] font-bold mb-3 sm:mb-4" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
           1. Select Role
         </h3>
         <div className="flex flex-wrap gap-2 sm:gap-2.5">
@@ -188,9 +190,9 @@ const StartInterview = () => {
               className="min-h-[44px] text-xs sm:text-sm"
               style={{
                 padding: '10px 14px', borderRadius: 12,
-                border: `2px solid ${role === r ? '#06b6d4' : '#e2e8f0'}`,
-                background: role === r ? '#e0f7fa' : 'white',
-                color: role === r ? '#0891b2' : '#475569',
+                border: `2px solid ${darkMode ? (role === r ? '#06b6d4' : '#334155') : (role === r ? '#06b6d4' : '#e2e8f0')}`,
+                background: darkMode ? (role === r ? '#164e63' : '#0f172a') : (role === r ? '#e0f7fa' : 'white'),
+                color: role === r ? '#0891b2' : (darkMode ? '#94a3b8' : '#475569'),
                 fontWeight: role === r ? 600 : 400,
                 cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'inherit',
               }}
@@ -202,8 +204,8 @@ const StartInterview = () => {
       </div>
 
       {/* Difficulty */}
-      <div className="p-4 sm:p-6 mb-4 sm:mb-5" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <h3 className="text-sm sm:text-[15px] font-bold mb-3 sm:mb-4" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>
+      <div className="p-4 sm:p-6 mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <h3 className="text-sm sm:text-[15px] font-bold mb-3 sm:mb-4" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
           2. Select Difficulty
         </h3>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -214,13 +216,13 @@ const StartInterview = () => {
               className="min-h-[44px]"
               style={{
                 flex: 1, padding: '14px 16px', borderRadius: 14,
-                border: `2px solid ${difficulty === key ? color : '#e2e8f0'}`,
-                background: difficulty === key ? `${color}15` : 'white',
+                border: `2px solid ${darkMode ? (difficulty === key ? color : '#334155') : (difficulty === key ? color : '#e2e8f0')}`,
+                background: difficulty === key ? `${color}15` : (darkMode ? '#0f172a' : 'white'),
                 cursor: 'pointer', textAlign: 'left',
                 transition: 'all 0.15s', fontFamily: 'inherit',
               }}
             >
-              <div className="text-sm font-bold mb-1" style={{ color: difficulty === key ? color : '#1e293b' }}>
+              <div className="text-sm font-bold mb-1" style={{ color: difficulty === key ? color : (darkMode ? '#f1f5f9' : '#1e293b') }}>
                 {label}
               </div>
               <div className="text-xs" style={{ color: '#94a3b8' }}>{desc}</div>
@@ -230,8 +232,8 @@ const StartInterview = () => {
       </div>
 
       {/* Resume */}
-      <div className="p-4 sm:p-6 mb-5 sm:mb-7" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <h3 className="text-sm sm:text-[15px] font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>
+      <div className="p-4 sm:p-6 mb-5 sm:mb-7" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <h3 className="text-sm sm:text-[15px] font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
           3. Upload Resume{' '}
           <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: 13 }}>(Optional)</span>
         </h3>
@@ -241,12 +243,12 @@ const StartInterview = () => {
         <label
           className="flex flex-col items-center gap-2 p-5 sm:p-6 cursor-pointer"
           style={{
-            border: '2px dashed #e2e8f0',
-            borderRadius: 12, background: '#fafafa',
+            border: `2px dashed ${darkMode ? '#334155' : '#e2e8f0'}`,
+            borderRadius: 12, background: darkMode ? '#0f172a' : '#fafafa',
           }}
         >
           <Upload size={24} color="#06b6d4" />
-          <span className="text-sm" style={{ color: '#64748b' }}>
+          <span className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
             {resumeFile ? resumeFile.name : 'Click to upload PDF'}
           </span>
           <input
@@ -287,14 +289,14 @@ const StartInterview = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
           <div>
-            <h2 className="text-lg sm:text-[22px] font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>
+            <h2 className="text-lg sm:text-[22px] font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
               Interview in Progress
             </h2>
             <p className="text-xs sm:text-[13px] mt-1" style={{ color: '#94a3b8' }}>{role} · {difficulty}</p>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto" style={{ background: 'white', borderRadius: 12, padding: '8px 12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center gap-2 self-start sm:self-auto" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 12, padding: '8px 12px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <Clock size={16} color="#06b6d4" />
-            <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: '#1e293b' }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: darkMode ? '#f1f5f9' : '#1e293b' }}>
               {formatTime(timer)}
             </span>
             <button
@@ -313,7 +315,7 @@ const StartInterview = () => {
         </div>
 
         {/* Progress bar */}
-        <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-[14px_20px] mb-4 sm:mb-5" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-[14px_20px] mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <span className="text-xs sm:text-[13px] font-medium whitespace-nowrap" style={{ color: '#64748b' }}>
             Q {currentQ + 1}/{questions.length}
           </span>
@@ -324,19 +326,19 @@ const StartInterview = () => {
         </div>
 
         {/* Question */}
-        <div className="p-4 sm:p-7 mb-4 sm:mb-5" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="p-4 sm:p-7 mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div className="inline-flex items-center gap-1.5 mb-3 sm:mb-4 text-xs font-semibold tracking-wide" style={{ background: '#e0f7fa', color: '#0891b2', padding: '4px 12px', borderRadius: 100 }}>
             Q{currentQ + 1} · {questions[currentQ]?.topic}
           </div>
-          <p className="text-base sm:text-lg font-semibold leading-relaxed m-0" style={{ color: '#1e293b' }}>
+          <p className="text-base sm:text-lg font-semibold leading-relaxed m-0" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
             {questions[currentQ]?.question}
           </p>
         </div>
 
         {/* Answer */}
-        <div className="p-4 sm:p-6 mb-4 sm:mb-5" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="p-4 sm:p-6 mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-semibold" style={{ color: '#1e293b' }}>Your Answer</label>
+            <label className="text-sm font-semibold" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>Your Answer</label>
             <button
               onClick={toggleRecording}
               disabled={isTranscribing}
@@ -385,9 +387,10 @@ const StartInterview = () => {
             className="w-full text-sm p-3 sm:p-3.5"
             style={{
               borderRadius: 12,
-              border: '1.5px solid #e2e8f0', outline: 'none',
+              border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, outline: 'none',
               fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.6,
-              boxSizing: 'border-box', color: '#1e293b',
+              boxSizing: 'border-box', color: darkMode ? '#f1f5f9' : '#1e293b',
+              background: darkMode ? '#0f172a' : undefined,
             }}
           />
           <div className="text-[11px] sm:text-xs mt-1.5" style={{ color: '#94a3b8' }}>
@@ -403,7 +406,7 @@ const StartInterview = () => {
             className="min-h-[44px] flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-medium w-full sm:w-auto"
             style={{
               borderRadius: 12,
-              border: '1.5px solid #e2e8f0', background: 'white',
+              border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: darkMode ? '#0f172a' : 'white',
               cursor: currentQ === 0 ? 'not-allowed' : 'pointer',
               color: currentQ === 0 ? '#cbd5e1' : '#475569',
               fontFamily: 'inherit',

@@ -4,14 +4,15 @@ import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { TrendingUp, Award, Target, AlertTriangle, Calendar, ChevronRight } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
-const StatCard = ({ label, value, sub, color, icon: Icon }) => (
-  <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-[20px_24px] min-w-0" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+const StatCard = ({ label, value, sub, color, icon: Icon, darkMode }) => (
+  <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-[20px_24px] min-w-0" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}20` }}>
       <Icon size={20} color={color} />
     </div>
     <div className="min-w-0">
-      <div className="text-lg sm:text-2xl font-bold leading-none" style={{ color: '#1e293b' }}>{value}</div>
+      <div className="text-lg sm:text-2xl font-bold leading-none" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{value}</div>
       <div className="text-xs sm:text-[13px] mt-1 truncate" style={{ color: '#94a3b8' }}>{label}</div>
     </div>
   </div>
@@ -29,6 +30,7 @@ const DifficultyBadge = ({ d }) => {
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('Last 30 Days');
@@ -56,28 +58,28 @@ const Dashboard = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>Dashboard</h1>
       </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <StatCard label="Total Interviews" value={stats?.totalInterviews || 0} color="#06b6d4" icon={TrendingUp} />
-        <StatCard label="Average Score" value={`${stats?.averageScore || 0}/10`} color="#eab308" icon={Target} />
-        <StatCard label="Best Score" value={`${stats?.bestScore || 0}/10`} color="#22c55e" icon={Award} />
-        <StatCard label="Weak Topics" value={stats?.weakTopicsCount || 0} color="#f97316" icon={AlertTriangle} />
+        <StatCard label="Total Interviews" value={stats?.totalInterviews || 0} color="#06b6d4" icon={TrendingUp} darkMode={darkMode} />
+        <StatCard label="Average Score" value={`${stats?.averageScore || 0}/10`} color="#eab308" icon={Target} darkMode={darkMode} />
+        <StatCard label="Best Score" value={`${stats?.bestScore || 0}/10`} color="#22c55e" icon={Award} darkMode={darkMode} />
+        <StatCard label="Weak Topics" value={stats?.weakTopicsCount || 0} color="#f97316" icon={AlertTriangle} darkMode={darkMode} />
       </div>
 
       {/* Charts row */}
       <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-4 sm:gap-5 mb-4 sm:mb-6">
         {/* Score trend */}
-        <div className="p-4 sm:p-6" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="p-4 sm:p-6" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 sm:mb-5">
-            <h3 className="text-sm sm:text-base font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Score Improvement</h3>
+            <h3 className="text-sm sm:text-base font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>Score Improvement</h3>
             <select
               value={period}
               onChange={e => setPeriod(e.target.value)}
               className="text-xs sm:text-[13px] self-start sm:self-auto"
-              style={{ color: '#64748b', border: '1px solid #e2e8f0', borderRadius: 8, padding: '4px 8px', outline: 'none' }}
+              style={{ color: darkMode ? '#94a3b8' : '#64748b', border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, borderRadius: 8, padding: '4px 8px', outline: 'none', background: darkMode ? '#0f172a' : undefined }}
             >
               <option>Last 30 Days</option>
               <option>Last 90 Days</option>
@@ -105,8 +107,8 @@ const Dashboard = () => {
         </div>
 
         {/* Topic performance */}
-        <div className="p-4 sm:p-6" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h3 className="text-sm sm:text-base font-bold mb-4 sm:mb-5" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b', margin: '0 0 20px' }}>Topic Performance</h3>
+        <div className="p-4 sm:p-6" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 className="text-sm sm:text-base font-bold mb-4 sm:mb-5" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b', margin: '0 0 20px' }}>Topic Performance</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={stats?.topicPerformance || []} barCategoryGap="25%">
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal vertical={false} />
@@ -127,13 +129,13 @@ const Dashboard = () => {
       </div>
 
       {/* Recent sessions */}
-      <div className="p-4 sm:p-6" style={{ background: 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+      <div className="p-4 sm:p-6" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between mb-4 sm:mb-5">
-          <h3 className="text-sm sm:text-base font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: '#1e293b' }}>Recent Sessions</h3>
+          <h3 className="text-sm sm:text-base font-bold m-0" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>Recent Sessions</h3>
           <button
             onClick={() => navigate('/history')}
             className="min-h-[44px] flex items-center gap-1 px-3 sm:px-3.5 text-xs sm:text-[13px] font-medium"
-            style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 10, cursor: 'pointer', color: '#475569' }}
+            style={{ background: darkMode ? '#1e293b' : 'white', border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, borderRadius: 10, cursor: 'pointer', color: darkMode ? '#94a3b8' : '#475569' }}
           >
             View All <ChevronRight size={14} />
           </button>
@@ -151,9 +153,9 @@ const Dashboard = () => {
           )}
           {(stats?.recentSessions || []).map((session) => (
             <div key={session.id} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-b-0">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ background: '#f1f5f9' }}>💼</div>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ background: darkMode ? '#334155' : '#f1f5f9' }}>💼</div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate" style={{ color: '#1e293b' }}>{session.role}</div>
+                <div className="text-sm font-semibold truncate" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.role}</div>
                 <div className="flex items-center gap-2 mt-1">
                   <DifficultyBadge d={session.difficulty} />
                   <span className="text-[11px]" style={{ color: '#94a3b8' }}>
@@ -162,7 +164,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="text-base font-bold" style={{ color: '#1e293b' }}>{session.score}/10</div>
+                <div className="text-base font-bold" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.score}/10</div>
               </div>
               <button
                 onClick={() => navigate(`/history/${session.id}`)}
@@ -179,7 +181,7 @@ const Dashboard = () => {
         <div className="hidden sm:block overflow-x-auto">
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
+              <tr style={{ borderBottom: `1px solid ${darkMode ? '#334155' : '#f1f5f9'}` }}>
                 {['ROLE CONTEXT', 'DIFFICULTY', 'SCORE', 'DATE', 'ACTION'].map(h => (
                   <th key={h} style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textAlign: 'left', padding: '0 8px 12px', letterSpacing: '0.05em' }}>{h}</th>
                 ))}
@@ -197,18 +199,18 @@ const Dashboard = () => {
                 </tr>
               )}
               {(stats?.recentSessions || []).map((session, i) => (
-                <tr key={session.id} style={{ borderBottom: i < stats.recentSessions.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                <tr key={session.id} style={{ borderBottom: i < stats.recentSessions.length - 1 ? `1px solid ${darkMode ? '#334155' : '#f1f5f9'}` : 'none' }}>
                   <td style={{ padding: '14px 8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💼</div>
+                      <div style={{ width: 32, height: 32, borderRadius: 8, background: darkMode ? '#334155' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💼</div>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: '#1e293b' }}>{session.role}</div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.role}</div>
                         <div style={{ fontSize: 12, color: '#94a3b8' }}>{session.difficulty === 'EASY' ? 'Fresher' : session.difficulty === 'HARD' ? 'Experienced' : 'Mid'} Level</div>
                       </div>
                     </div>
                   </td>
                   <td style={{ padding: '14px 8px' }}><DifficultyBadge d={session.difficulty} /></td>
-                  <td style={{ padding: '14px 8px', fontWeight: 700, fontSize: 15, color: '#1e293b' }}>{session.score}/10</td>
+                  <td style={{ padding: '14px 8px', fontWeight: 700, fontSize: 15, color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.score}/10</td>
                   <td style={{ padding: '14px 8px', fontSize: 13, color: '#64748b' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <Calendar size={13} />
@@ -219,7 +221,7 @@ const Dashboard = () => {
                     <button
                       onClick={() => navigate(`/history/${session.id}`)}
                       className="min-h-[44px]"
-                      style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: '#475569', whiteSpace: 'nowrap' }}
+                      style={{ background: darkMode ? '#1e293b' : 'white', border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', whiteSpace: 'nowrap' }}
                     >
                       View Report
                     </button>
