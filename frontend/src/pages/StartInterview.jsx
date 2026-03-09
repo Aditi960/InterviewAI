@@ -106,15 +106,34 @@ const StartInterview = () => {
     };
   }, [currentQ, session, muted]);
 
-  const speakQuestion = () => {
+  const speakQuestion = async () => {
     const question = session?.questions[currentQ]?.question;
-    if (!question || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(question);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    window.speechSynthesis.speak(utterance);
+    if (!question) return;
+    
+    try {
+      if (vapiRef.current) await vapiRef.current.stop();
+      
+      await vapiRef.current.start({
+        assistantId: "8bb86073-5bef-448a-a9ab-d1fca658b935",
+        assistantOverrides: {
+          firstMessage: question,
+        }
+      });
+    } catch (err) {
+      // fallback to browser TTS if Vapi fails
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(question);
+      utterance.rate = 0.9;
+      window.speechSynthesis.speak(utterance);
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (vapiRef.current) vapiRef.current.stop();
+      window.speechSynthesis.cancel();
+    };
+  }, [currentQ]);
 
   const formatTime = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
