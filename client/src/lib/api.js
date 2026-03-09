@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { supabase } from './supabase'
 
 const api = axios.create({
   baseURL: '/api',
@@ -9,11 +8,11 @@ const api = axios.create({
   },
 })
 
-// Attach Supabase JWT to every request
-api.interceptors.request.use(async (config) => {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (session?.access_token) {
-    config.headers.Authorization = `Bearer ${session.access_token}`
+// Attach JWT from localStorage to every request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 }, (error) => Promise.reject(error))
@@ -23,7 +22,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await supabase.auth.signOut()
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
       window.location.href = '/login'
     }
     return Promise.reject(error)

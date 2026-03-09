@@ -4,8 +4,7 @@ const topicSchema = new mongoose.Schema({ name: String, score: Number, feedback:
 const questionSchema = new mongoose.Schema({ question: String, answer: String, evaluation: String, score: Number }, { _id: false });
 
 const interviewSessionSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  supabaseId: { type: String, required: true, index: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   role: { type: String, required: true, enum: ['Frontend Developer', 'Backend Engineer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist'] },
   difficulty: { type: String, required: true, enum: ['EASY', 'MEDIUM', 'HARD'] },
   resumeUrl: { type: String, default: '' },
@@ -22,7 +21,6 @@ const interviewSessionSchema = new mongoose.Schema({
   duration: { type: Number, default: 0 },
 }, { timestamps: true });
 
-interviewSessionSchema.index({ supabaseId: 1, createdAt: -1 });
 interviewSessionSchema.index({ userId: 1, createdAt: -1 });
 
 module.exports = mongoose.model('InterviewSession', interviewSessionSchema);

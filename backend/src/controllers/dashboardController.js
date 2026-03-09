@@ -2,9 +2,9 @@ const InterviewSession = require('../models/InterviewSession');
 
 const getStats = async (req, res, next) => {
   try {
-    const supabaseId = req.supabaseUser.id;
+    const userId = req.user._id;
 
-    const sessions = await InterviewSession.find({ supabaseId, status: 'completed' })
+    const sessions = await InterviewSession.find({ userId, status: 'completed' })
       .sort({ createdAt: -1 })
       .lean();
 

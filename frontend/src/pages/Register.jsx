@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Zap, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
-  const { signUp, signInWithGoogle } = useAuth();
+  const { signUp } = useAuth();
   const { darkMode } = useTheme();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });

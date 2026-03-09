@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Zap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signIn } = useAuth();
   const { darkMode } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,14 +29,6 @@ const Login = () => {
       toast.error(err.message || 'Login failed');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      toast.error(err.message || 'Google sign-in failed');
     }
   };
 
@@ -112,23 +104,6 @@ const Login = () => {
               {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
-            <div style={{ flex: 1, height: 1, background: darkMode ? '#334155' : '#e2e8f0' }} />
-            <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>OR CONTINUE WITH</span>
-            <div style={{ flex: 1, height: 1, background: darkMode ? '#334155' : '#e2e8f0' }} />
-          </div>
-
-          {['Google', 'GitHub', 'LinkedIn'].map(provider => (
-            <button
-              key={provider}
-              onClick={provider === 'Google' ? handleGoogle : undefined}
-              className="w-full min-h-[44px]"
-              style={{ background: darkMode ? '#1e293b' : 'white', border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, borderRadius: 12, padding: '10px', fontSize: 14, fontWeight: 500, cursor: 'pointer', marginBottom: 10, fontFamily: 'inherit', color: darkMode ? '#f1f5f9' : '#1e293b', transition: 'border-color 0.15s' }}
-            >
-              Continue with {provider}
-            </button>
-          ))}
 
           <p style={{ textAlign: 'center', fontSize: 14, color: darkMode ? '#94a3b8' : '#64748b', marginTop: 20 }}>
             Don't have an account?{' '}
