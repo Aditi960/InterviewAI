@@ -62,51 +62,8 @@ const StartInterview = () => {
     };
   }, [step]);
 
-  useEffect(() => {
-    if (!session) return;
-    const question = session.questions[currentQ]?.question;
-    if (!question) return;
-
-    if (vapiRef.current) {
-      vapiRef.current.stop();
-    }
-    console.log('Vapi key:', import.meta.env.VITE_VAPI_API_KEY);
-    console.log('Vapi instance:', vapiRef.current);
-    console.log('Question to speak:', session?.questions[currentQ]?.question);
-    if (!muted) {
-      vapiRef.current?.stop();
-      vapiRef.current?.start({
-        transcriber: {
-          provider: "deepgram",
-          model: "nova-2",
-          language: "en",
-        },
-        model: {
-          provider: "openai",
-          model: "gpt-3.5-turbo",
-          messages: [
-            {
-              role: "system",
-              content: `Read this question exactly, word for word, then stop: "${session.questions[currentQ]?.question}"`,
-            },
-          ],
-        },
-        voice: {
-          provider: "elevenlabs",
-          voiceId: "paula",
-        },
-        firstMessage: session.questions[currentQ]?.question,
-        firstMessageMode: "assistant-speaks-first-with-model-generated-message",
-      });
-    }
-    return () => {
-      if (vapiRef.current) {
-        vapiRef.current.stop();
-      }
-    };
-  }, [currentQ, session, muted]);
-
   const speakQuestion = async () => {
+    console.log("ElevenLabs key:", import.meta.env.VITE_ELEVENLABS_API_KEY);
     const question = session?.questions[currentQ]?.question;
     if (!question) return;
 
@@ -126,6 +83,12 @@ const StartInterview = () => {
           }),
         }
       );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("ElevenLabs response error:", response.status, errText);
+        throw new Error("ElevenLabs API failed");
+      }
 
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
