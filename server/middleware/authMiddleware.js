@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { User } from '../models/User.js';
 
 dotenv.config();
 
@@ -13,16 +14,17 @@ export const authMiddleware = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
 
-    // Verify Supabase JWT
-    const decoded = jwt.verify(token, process.env.SUPABASE_JWT_SECRET, {
-      algorithms: ['HS256'],
-    });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach user info to request
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
     req.user = {
-      id: decoded.sub,      // Supabase UID
-      email: decoded.email,
-      role: decoded.role,
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
     };
 
     next();
