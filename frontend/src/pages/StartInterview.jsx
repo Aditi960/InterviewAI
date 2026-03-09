@@ -109,18 +109,31 @@ const StartInterview = () => {
   const speakQuestion = async () => {
     const question = session?.questions[currentQ]?.question;
     if (!question) return;
-    
+
     try {
-      if (vapiRef.current) await vapiRef.current.stop();
-      
-      await vapiRef.current.start({
-        assistantId: "8bb86073-5bef-448a-a9ab-d1fca658b935",
-        assistantOverrides: {
-          firstMessage: question,
+      const response = await fetch(
+        "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM",
+        {
+          method: "POST",
+          headers: {
+            "xi-api-key": import.meta.env.VITE_ELEVENLABS_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: question,
+            model_id: "eleven_monolingual_v1",
+            voice_settings: { stability: 0.5, similarity_boost: 0.75 }
+          }),
         }
-      });
+      );
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.play();
     } catch (err) {
-      // fallback to browser TTS if Vapi fails
+      console.error("ElevenLabs error:", err);
+      // fallback to browser TTS
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(question);
       utterance.rate = 0.9;
