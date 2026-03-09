@@ -13,29 +13,36 @@ const generateToken = (userId) => {
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { email, password, name } = req.body;
+  try {
+    const { email, password, name } = req.body;
 
-  if (!email || !password || !name) {
-    return res.status(400).json({ error: 'Name, email, and password are required' });
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    const user = await User.create({ name, email, password });
+    const token = generateToken(user._id);
+
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        preferences: user.preferences,
+      },
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    res.status(500).json({ error: error.message });
   }
-
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({ error: 'Email already registered' });
-  }
-
-  const user = await User.create({ name, email, password });
-  const token = generateToken(user._id);
-
-  res.status(201).json({
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      preferences: user.preferences,
-    },
-  });
 });
 
 // POST /api/auth/login
