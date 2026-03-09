@@ -106,6 +106,16 @@ const StartInterview = () => {
     };
   }, [currentQ, session, muted]);
 
+  const speakQuestion = () => {
+    const question = session?.questions[currentQ]?.question;
+    if (!question || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(question);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+  };
+
   const formatTime = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
@@ -330,9 +340,23 @@ const StartInterview = () => {
           <div className="inline-flex items-center gap-1.5 mb-3 sm:mb-4 text-xs font-semibold tracking-wide" style={{ background: '#e0f7fa', color: '#0891b2', padding: '4px 12px', borderRadius: 100 }}>
             Q{currentQ + 1} · {questions[currentQ]?.topic}
           </div>
-          <p className="text-base sm:text-lg font-semibold leading-relaxed m-0" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
-            {questions[currentQ]?.question}
-          </p>
+          <div className="flex items-start gap-2">
+            <p className="text-base sm:text-lg font-semibold leading-relaxed m-0" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
+              {questions[currentQ]?.question}
+            </p>
+            <button
+              onClick={speakQuestion}
+              title="Read question aloud"
+              aria-label="Read question aloud"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 20, padding: 4, borderRadius: 8,
+              }}
+            >
+              🔊
+            </button>
+          </div>
         </div>
 
         {/* Answer */}
