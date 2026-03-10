@@ -50,11 +50,6 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-8 pt-16 pb-20 text-center">
-        <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-xs text-gray-600 font-medium mb-8 shadow-sm">
-          <span className="w-1.5 h-1.5 bg-brand-cyan rounded-full animate-pulse" />
-          Now: Web Speech API Integration
-        </div>
-
         <h1 className="font-display text-5xl md:text-6xl font-extrabold text-gray-800 leading-tight mb-6 max-w-3xl mx-auto">
           Ace Your Interviews<br />
           with <span className="text-brand-cyan">AI</span>
@@ -124,81 +119,6 @@ export default function LandingPage() {
               <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Auth flow section */}
-      <section className="max-w-7xl mx-auto px-8 py-16">
-        <h2 className="font-display text-3xl font-bold text-gray-800 text-center mb-2">Authentication Flow UI</h2>
-        <p className="text-gray-500 text-center mb-12">Clean, secure, and production-ready components designed for JWT and OAuth integrations.</p>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Login card */}
-          <div className="card">
-            <h3 className="font-display font-bold text-gray-800 text-xl mb-1">Welcome back</h3>
-            <p className="text-gray-400 text-sm mb-5">Enter your details to access your account.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Email</label>
-                <div className="input-field text-gray-400 text-sm">you@example.com</div>
-              </div>
-              <div>
-                <div className="flex justify-between mb-1">
-                  <label className="text-xs text-gray-500">Password</label>
-                  <span className="text-xs text-brand-cyan cursor-pointer">Forgot Password?</span>
-                </div>
-                <div className="input-field text-gray-400 text-sm">••••••••</div>
-              </div>
-              <Link to="/login" className="btn-primary w-full block text-center text-sm py-3">Log in</Link>
-              <div className="text-center text-xs text-gray-400">OR CONTINUE WITH</div>
-              {['Google', 'GitHub', 'LinkedIn'].map(p => (
-                <button key={p} className="btn-secondary w-full text-sm py-2.5">Continue with {p}</button>
-              ))}
-              <p className="text-center text-xs text-gray-500">Don't have an account? <Link to="/signup" className="text-brand-cyan">Create Account</Link></p>
-            </div>
-          </div>
-
-          {/* Signup card */}
-          <div className="card">
-            <h3 className="font-display font-bold text-gray-800 text-xl mb-1">Create an account</h3>
-            <p className="text-gray-400 text-sm mb-5">Start your AI interview journey today.</p>
-            <div className="space-y-3">
-              {['Full Name', 'Email', 'Password', 'Confirm Password'].map(f => (
-                <div key={f}>
-                  <label className="text-xs text-gray-500 mb-1 block">{f}</label>
-                  <div className="input-field text-gray-400 text-sm">{f === 'Full Name' ? 'John Doe' : f === 'Email' ? 'you@example.com' : f === 'Password' ? 'Create a password' : 'Repeat your password'}</div>
-                  {f === 'Password' && (
-                    <div className="flex gap-1 mt-1">
-                      <div className="h-1 flex-1 bg-green-400 rounded" />
-                      <div className="h-1 flex-1 bg-yellow-400 rounded" />
-                      <div className="h-1 flex-1 bg-gray-200 rounded" />
-                    </div>
-                  )}
-                </div>
-              ))}
-              <Link to="/signup" className="btn-primary w-full block text-center text-sm py-3">Create Account</Link>
-              <p className="text-center text-xs text-gray-500">Already have an account? <Link to="/login" className="text-brand-cyan">Log in</Link></p>
-            </div>
-          </div>
-
-          {/* Forgot password card */}
-          <div className="card">
-            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4">
-              <span className="text-2xl">🔑</span>
-            </div>
-            <h3 className="font-display font-bold text-gray-800 text-xl mb-1">Forgot Password?</h3>
-            <p className="text-gray-400 text-sm mb-5">No worries, we'll send you reset instructions to your email.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Email</label>
-                <div className="input-field text-gray-400 text-sm">you@example.com</div>
-              </div>
-              <Link to="/forgot-password" className="block w-full bg-red-400 hover:bg-red-500 text-white font-semibold text-sm py-3 rounded-xl text-center transition-colors">
-                Send Reset Link
-              </Link>
-              <p className="text-center text-xs text-gray-500">Back to <Link to="/login" className="text-brand-cyan">log in</Link></p>
-            </div>
-          </div>
         </div>
       </section>
 
