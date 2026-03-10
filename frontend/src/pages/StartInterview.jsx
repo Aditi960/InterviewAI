@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useBlocker } from 'react-router-dom';
 import Vapi from '@vapi-ai/web';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
@@ -28,6 +28,7 @@ const StartInterview = () => {
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [timer, setTimer] = useState(0);
   const [muted, setMuted] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
   const vapiRef = useRef(null);
@@ -150,6 +151,11 @@ const StartInterview = () => {
     setCurrentAnswer(newAnswers[index] || '');
   };
 
+  const openEndModal = () => {
+    window.speechSynthesis.cancel();
+    setShowEndModal(true);
+  };
+
   const submitInterview = async () => {
     stopRecording();
     const finalAnswers = [...answers];
@@ -170,6 +176,21 @@ const StartInterview = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (step !== 2) return;
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [step]);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      step === 2 && currentLocation.pathname !== nextLocation.pathname
+  );
 
   // ─── Step 1: Setup ─────────────────────────────────────────────────────────
 
@@ -448,7 +469,7 @@ const StartInterview = () => {
             </button>
           ) : (
             <button
-              onClick={submitInterview}
+              onClick={openEndModal}
               disabled={loading}
               className="min-h-[44px] flex-1 flex items-center justify-center gap-2 px-4 sm:px-5 py-3 text-sm font-semibold"
               style={{
@@ -480,6 +501,76 @@ const StartInterview = () => {
             />
           ))}
         </div>
+
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={openEndModal}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold"
+            style={{ background: '#fef2f2', color: '#ef4444', border: '1.5px solid #fecaca', cursor: 'pointer' }}
+          >
+            End Interview
+          </button>
+        </div>
+
+        {/* End Interview Modal */}
+        {showEndModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="text-lg font-bold mb-2" style={{ color: darkMode ? '#f1f5f9' : '#1e293b', fontFamily: 'Syne, sans-serif' }}>
+                End Interview?
+              </h3>
+              <p className="text-sm mb-6" style={{ color: '#94a3b8' }}>
+                Are you sure you want to end the interview? Your current progress will be saved.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowEndModal(false)}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                  style={{ border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: 'transparent', color: darkMode ? '#94a3b8' : '#475569', cursor: 'pointer' }}
+                >
+                  Continue
+                </button>
+                <button
+                  onClick={() => { setShowEndModal(false); submitInterview(); }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                  style={{ background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
+                >
+                  End Interview
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Leave Page Modal */}
+        {blocker.state === 'blocked' && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="text-lg font-bold mb-2" style={{ color: darkMode ? '#f1f5f9' : '#1e293b', fontFamily: 'Syne, sans-serif' }}>
+                Leave Interview?
+              </h3>
+              <p className="text-sm mb-6" style={{ color: '#94a3b8' }}>
+                Are you sure you want to leave? Your interview progress will be lost.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => blocker.reset()}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium"
+                  style={{ border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: 'transparent', color: darkMode ? '#94a3b8' : '#475569', cursor: 'pointer' }}
+                >
+                  Stay
+                </button>
+                <button
+                  onClick={() => blocker.proceed()}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                  style={{ background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
+                >
+                  Leave
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     );
