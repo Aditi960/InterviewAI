@@ -43,8 +43,8 @@ app.use(cors({
 
 // ── Rate Limiting ─────────────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -52,7 +52,7 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 10,
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10) || 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts, please try again in 15 minutes.' },
@@ -60,7 +60,7 @@ const authLimiter = rateLimit({
 
 const interviewLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: parseInt(process.env.INTERVIEW_RATE_LIMIT_MAX) || 20,
+  max: parseInt(process.env.INTERVIEW_RATE_LIMIT_MAX, 10) || 20,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many interview requests, please slow down.' },
