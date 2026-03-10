@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useBlocker } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Vapi from '@vapi-ai/web';
 import api from '../lib/api';
 import toast from 'react-hot-toast';
@@ -186,11 +186,6 @@ const StartInterview = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [step]);
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      step === 2 && currentLocation.pathname !== nextLocation.pathname
-  );
 
   // ─── Step 1: Setup ─────────────────────────────────────────────────────────
 
@@ -536,36 +531,6 @@ const StartInterview = () => {
                   style={{ background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
                 >
                   End Interview
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Leave Page Modal */}
-        {blocker.state === 'blocked' && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-              <h3 className="text-lg font-bold mb-2" style={{ color: darkMode ? '#f1f5f9' : '#1e293b', fontFamily: 'Syne, sans-serif' }}>
-                Leave Interview?
-              </h3>
-              <p className="text-sm mb-6" style={{ color: '#94a3b8' }}>
-                Are you sure you want to leave? Your interview progress will be lost.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => blocker.reset()}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium"
-                  style={{ border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: 'transparent', color: darkMode ? '#94a3b8' : '#475569', cursor: 'pointer' }}
-                >
-                  Stay
-                </button>
-                <button
-                  onClick={() => blocker.proceed()}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                  style={{ background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
-                >
-                  Leave
                 </button>
               </div>
             </div>
