@@ -5,6 +5,9 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import App from './App';
 import './index.css';
+import { startKeepAlive } from './utils/keepAlive';
+
+startKeepAlive();
 
 const ThemedToaster = () => {
   const { darkMode } = useTheme();
