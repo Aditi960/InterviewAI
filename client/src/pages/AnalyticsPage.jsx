@@ -10,12 +10,10 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      api.get('/dashboard/stats'),
-      api.get('/dashboard/topic-breakdown'),
-    ]).then(([statsRes, breakdownRes]) => {
-      setData({ ...statsRes.data, breakdown: breakdownRes.data.breakdown })
-    }).catch(console.error).finally(() => setLoading(false))
+    api.get('/dashboard/stats')
+      .then(res => setData(res.data))
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) {
@@ -36,18 +34,18 @@ export default function AnalyticsPage() {
   })) || []
 
   const topicData = data?.topicPerformance?.map(t => ({
-    topic: t.topic,
-    avg: t.avgScore,
+    topic: t.name,
+    avg: t.average,
     count: t.count,
-    fill: t.isWeak ? '#f87171' : '#00e5ff',
+    fill: t.average < 6 ? '#f87171' : '#00e5ff',
   })) || []
 
   const radarData = data?.topicPerformance?.map(t => ({
-    topic: t.topic,
-    score: t.avgScore,
+    topic: t.name,
+    score: t.average,
   })) || []
 
-  const weakTopics = data?.topicPerformance?.filter(t => t.isWeak) || []
+  const weakTopics = data?.topicPerformance?.filter(t => t.average < 6) || []
 
   return (
     <div className="p-8">
@@ -59,10 +57,10 @@ export default function AnalyticsPage() {
       {/* Summary pills */}
       <div className="flex gap-4 mb-8 flex-wrap">
         {[
-          { label: 'Total Interviews', value: data?.stats.totalInterviews || 0, color: 'bg-sky-100 text-sky-700' },
-          { label: 'Average Score', value: `${data?.stats.averageScore || 0}/10`, color: 'bg-amber-100 text-amber-700' },
-          { label: 'Best Score', value: `${data?.stats.bestScore || 0}/10`, color: 'bg-emerald-100 text-emerald-700' },
-          { label: 'Weak Topics', value: data?.stats.weakTopicsCount || 0, color: 'bg-red-100 text-red-600' },
+          { label: 'Total Interviews', value: data?.totalInterviews || 0, color: 'bg-sky-100 text-sky-700' },
+          { label: 'Average Score', value: `${data?.averageScore || 0}/10`, color: 'bg-amber-100 text-amber-700' },
+          { label: 'Best Score', value: `${data?.bestScore || 0}/10`, color: 'bg-emerald-100 text-emerald-700' },
+          { label: 'Weak Topics', value: data?.weakTopicsCount || 0, color: 'bg-red-100 text-red-600' },
         ].map(s => (
           <div key={s.label} className={`${s.color} px-5 py-3 rounded-xl`}>
             <p className="text-xs font-medium opacity-70">{s.label}</p>
@@ -127,10 +125,9 @@ export default function AnalyticsPage() {
           <p className="text-gray-500 text-sm mb-4">These topics need improvement (score below 6/10)</p>
           <div className="grid grid-cols-3 gap-3">
             {weakTopics.map(t => (
-              <div key={t.topic} className="bg-red-50 border border-red-100 rounded-xl p-3">
-                <p className="font-medium text-red-700 text-sm">{t.topic}</p>
-                <p className="text-2xl font-display font-bold text-red-500 mt-1">{t.avgScore}/10</p>
-                <p className="text-xs text-red-400 mt-0.5">across {t.count} interview{t.count !== 1 ? 's' : ''}</p>
+              <div key={t.name} className="bg-red-50 border border-red-100 rounded-xl p-3">
+                <p className="font-medium text-red-700 text-sm">{t.name}</p>
+                <p className="text-2xl font-display font-bold text-red-500 mt-1">{t.average}/10</p>
               </div>
             ))}
           </div>
