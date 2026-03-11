@@ -101,9 +101,9 @@ const SessionDetail = ({ id }) => {
           <div>
             <h3 className="text-sm sm:text-[15px] font-bold mb-3 sm:mb-4" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>Topic Scores</h3>
             {session.topicAnalysis.map(t => (
-              <div key={t.name} className="mb-3 sm:mb-3.5">
+              <div key={t.name || t.topic} className="mb-3 sm:mb-3.5">
                 <div className="flex justify-between mb-1">
-                  <span className="text-xs sm:text-[13px] font-medium" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>{t.name}</span>
+                  <span className="text-xs sm:text-[13px] font-medium" style={{ color: darkMode ? '#94a3b8' : '#475569' }}>{t.name || t.topic}</span>
                   <span className="text-xs sm:text-[13px] font-bold" style={{ color: t.score < 6 ? '#ef4444' : '#22c55e' }}>{t.score}/10</span>
                 </div>
                 <div style={{ height: 6, background: darkMode ? '#334155' : '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
@@ -113,7 +113,7 @@ const SessionDetail = ({ id }) => {
             ))}
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <RadarChart data={session.topicAnalysis.map(t => ({ topic: t.name, score: t.score }))}>
+            <RadarChart data={session.topicAnalysis.map(t => ({ topic: t.name || t.topic, score: t.score }))}>
               <PolarGrid stroke="#f1f5f9" />
               <PolarAngleAxis dataKey="topic" tick={{ fontSize: 10, fill: '#94a3b8' }} />
               <Radar dataKey="score" stroke="#06b6d4" fill="#06b6d4" fillOpacity={0.2} strokeWidth={2} dot={{ r: 3, fill: '#06b6d4' }} />

@@ -30,9 +30,12 @@ const getStats = async (req, res, next) => {
     const topicMap = {};
     sessions.forEach(session => {
       (session.topicAnalysis || []).forEach(topic => {
-        if (!topicMap[topic.name]) topicMap[topic.name] = { total: 0, count: 0 };
-        topicMap[topic.name].total += topic.score;
-        topicMap[topic.name].count += 1;
+        const topicName = topic.name || topic.topic;
+        const topicScore = typeof topic.score === 'number' ? topic.score : 0;
+        if (!topicName) return;
+        if (!topicMap[topicName]) topicMap[topicName] = { total: 0, count: 0 };
+        topicMap[topicName].total += topicScore;
+        topicMap[topicName].count += 1;
       });
     });
 
