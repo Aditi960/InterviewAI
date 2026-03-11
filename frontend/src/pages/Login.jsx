@@ -20,6 +20,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return toast.error('Please fill all fields');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast.error('Please enter a valid email address');
+    if (password.length < 6) return toast.error('Password must be at least 6 characters');
     setLoading(true);
     try {
       await signIn(email, password);
