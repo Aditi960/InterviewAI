@@ -152,7 +152,7 @@ const Dashboard = () => {
             </div>
           )}
           {(stats?.recentSessions || []).map((session) => (
-            <div key={session.id} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-b-0">
+            <div key={session._id} className="flex items-center gap-3 py-3 border-b border-slate-100 last:border-b-0">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ background: darkMode ? '#334155' : '#f1f5f9' }}>💼</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold truncate" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.role}</div>
@@ -167,7 +167,7 @@ const Dashboard = () => {
                 <div className="text-base font-bold" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.score}/10</div>
               </div>
               <button
-                onClick={() => navigate(`/history/${session.id}`)}
+                onClick={() => navigate(`/history/${session._id}`)}
                 className="min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
                 style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               >
@@ -199,7 +199,7 @@ const Dashboard = () => {
                 </tr>
               )}
               {(stats?.recentSessions || []).map((session, i) => (
-                <tr key={session.id} style={{ borderBottom: i < stats.recentSessions.length - 1 ? `1px solid ${darkMode ? '#334155' : '#f1f5f9'}` : 'none' }}>
+                <tr key={session._id} style={{ borderBottom: i < stats.recentSessions.length - 1 ? `1px solid ${darkMode ? '#334155' : '#f1f5f9'}` : 'none' }}>
                   <td style={{ padding: '14px 8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 32, height: 32, borderRadius: 8, background: darkMode ? '#334155' : '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>💼</div>
@@ -219,7 +219,7 @@ const Dashboard = () => {
                   </td>
                   <td style={{ padding: '14px 8px' }}>
                     <button
-                      onClick={() => navigate(`/history/${session.id}`)}
+                      onClick={() => navigate(`/history/${session._id}`)}
                       className="min-h-[44px]"
                       style={{ background: darkMode ? '#1e293b' : 'white', border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', whiteSpace: 'nowrap' }}
                     >
