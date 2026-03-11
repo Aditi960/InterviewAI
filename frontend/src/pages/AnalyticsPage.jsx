@@ -11,8 +11,8 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/dashboard/stats')
-      .then(d => setData(d))
+    api.get('/api/dashboard/stats')
+      .then(d => setData(d.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
