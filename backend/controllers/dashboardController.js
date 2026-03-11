@@ -30,11 +30,12 @@ const getDashboardStats = async (req, res) => {
         { $unwind: '$topicAnalysis' },
         {
           $group: {
-            _id: '$topicAnalysis.name',
+            _id: { $ifNull: ['$topicAnalysis.name', '$topicAnalysis.topic'] },
             avgScore: { $avg: '$topicAnalysis.score' },
             count: { $sum: 1 },
           },
         },
+        { $match: { _id: { $ne: null } } },
         { $sort: { avgScore: -1 } },
       ]),
     ]);
@@ -43,12 +44,10 @@ const getDashboardStats = async (req, res) => {
     const weakTopics = topicPerformance.filter(t => t.avgScore < 6);
 
     res.json({
-      stats: {
-        totalInterviews: stats.totalInterviews,
-        averageScore: stats.averageScore ? parseFloat(stats.averageScore.toFixed(1)) : 0,
-        bestScore: stats.bestScore ? parseFloat(stats.bestScore.toFixed(1)) : 0,
-        weakTopicsCount: weakTopics.length,
-      },
+      totalInterviews: stats.totalInterviews,
+      averageScore: stats.averageScore ? parseFloat(stats.averageScore.toFixed(1)) : 0,
+      bestScore: stats.bestScore ? parseFloat(stats.bestScore.toFixed(1)) : 0,
+      weakTopicsCount: weakTopics.length,
       recentSessions,
       scoreHistory: scoreHistory.map((s, i) => ({
         label: `Interview ${i + 1}`,
@@ -57,7 +56,7 @@ const getDashboardStats = async (req, res) => {
       })),
       topicPerformance: topicPerformance.map(t => ({
         name: t._id,
-        avgScore: parseFloat(t.avgScore.toFixed(1)),
+        average: parseFloat(t.avgScore.toFixed(1)),
         isWeak: t.avgScore < 6,
       })),
     });
