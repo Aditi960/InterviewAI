@@ -63,10 +63,10 @@ const Dashboard = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <StatCard label="Total Interviews" value={stats?.stats?.totalInterviews || 0} color="#06b6d4" icon={TrendingUp} darkMode={darkMode} />
-        <StatCard label="Average Score" value={`${stats?.stats?.averageScore || 0}/10`} color="#eab308" icon={Target} darkMode={darkMode} />
-        <StatCard label="Best Score" value={`${stats?.stats?.bestScore || 0}/10`} color="#22c55e" icon={Award} darkMode={darkMode} />
-        <StatCard label="Weak Topics" value={stats?.stats?.weakTopicsCount || 0} color="#f97316" icon={AlertTriangle} darkMode={darkMode} />
+        <StatCard label="Total Interviews" value={stats?.totalInterviews || 0} color="#06b6d4" icon={TrendingUp} darkMode={darkMode} />
+        <StatCard label="Average Score" value={`${stats?.averageScore || 0}/10`} color="#eab308" icon={Target} darkMode={darkMode} />
+        <StatCard label="Best Score" value={`${stats?.bestScore || 0}/10`} color="#22c55e" icon={Award} darkMode={darkMode} />
+        <StatCard label="Weak Topics" value={stats?.weakTopicsCount || 0} color="#f97316" icon={AlertTriangle} darkMode={darkMode} />
       </div>
 
       {/* Charts row */}
@@ -118,9 +118,9 @@ const Dashboard = () => {
                 contentStyle={{ borderRadius: 10, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 13 }}
                 formatter={val => [`${val}/10`, 'Score']}
               />
-              <Bar dataKey="avgScore" radius={[6, 6, 0, 0]}>
+              <Bar dataKey="average" radius={[6, 6, 0, 0]}>
                 {(stats?.topicPerformance || []).map((entry, i) => (
-                  <Cell key={i} fill={entry.avgScore < 6 ? '#ef4444' : TOPIC_COLORS[i % TOPIC_COLORS.length]} />
+                  <Cell key={i} fill={entry.isWeak ? '#ef4444' : TOPIC_COLORS[i % TOPIC_COLORS.length]} />
                 ))}
               </Bar>
             </BarChart>
