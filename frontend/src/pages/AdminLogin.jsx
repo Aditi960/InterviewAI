@@ -25,7 +25,7 @@ const AdminLogin = () => {
       if (data.user.role !== 'admin') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        toast.error('Not authorized as admin');
+        toast.error('Access denied. Not an admin.');
         return;
       }
       localStorage.setItem('token', data.token);
