@@ -12,6 +12,7 @@ import StartInterview from './pages/StartInterview';
 import InterviewHistory from './pages/InterviewHistory';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 
 const App = () => {
@@ -56,6 +57,9 @@ const App = () => {
             <Layout><Settings /></Layout>
           </ProtectedRoute>
         } />
+
+        {/* Admin route */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
