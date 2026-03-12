@@ -6,9 +6,12 @@ const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./config/db');
 const { errorHandler } = require('./middleware/errorHandler');
+const authMiddleware = require('./middleware/authMiddleware');
+const adminMiddleware = require('./middleware/adminMiddleware');
 const authRoutes = require('./routes/auth');
 const interviewRoutes = require('./routes/interviews');
 const dashboardRoutes = require('./routes/dashboard');
+const adminRoutes = require('./routes/admin');
 
 dotenv.config();
 
@@ -64,6 +67,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
