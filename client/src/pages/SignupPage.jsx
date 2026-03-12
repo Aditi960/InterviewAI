@@ -15,7 +15,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { signUp, signInWithGoogle } = useAuth()
+  const { signUp } = useAuth()
   const navigate = useNavigate()
   const strength = getPasswordStrength(form.password)
 
@@ -100,16 +100,6 @@ export default function SignupPage() {
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
-
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-          <div className="relative flex justify-center text-xs text-gray-500 bg-[#fdf5f5] px-2">OR</div>
-        </div>
-
-        <button onClick={signInWithGoogle} className="btn-secondary w-full py-3 flex items-center justify-center gap-2 text-sm">
-          <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
-          Continue with Google
-        </button>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}

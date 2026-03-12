@@ -63,7 +63,7 @@ export default function SettingsPage() {
                 disabled
                 className="input-field bg-gray-50 text-gray-400 cursor-not-allowed"
               />
-              <p className="text-xs text-gray-400 mt-1">Email cannot be changed here. Manage in Supabase Auth.</p>
+              <p className="text-xs text-gray-400 mt-1">Email cannot be changed here.</p>
             </div>
           </div>
         </div>

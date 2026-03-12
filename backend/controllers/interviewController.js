@@ -64,7 +64,7 @@ const transcribeAudio = (req, res, next) => {
 const startInterview = async (req, res, next) => {
   try {
     const { role, difficulty } = req.body;
-    const supabaseId = req.supabaseUser.id;
+    const userId = req.user._id;
 
     if (!role || !difficulty) {
       return res.status(400).json({ error: 'Role and difficulty are required' });
@@ -107,7 +107,6 @@ Return ONLY a valid JSON array. No markdown, no code fences, no explanation.
 
     const session = await InterviewSession.create({
       userId: req.user._id,
-      supabaseId,
       role,
       difficulty,
       status: 'in-progress',
@@ -136,9 +135,9 @@ Return ONLY a valid JSON array. No markdown, no code fences, no explanation.
 const submitInterview = async (req, res, next) => {
   try {
     const { sessionId, answers, duration } = req.body;
-    const supabaseId = req.supabaseUser.id;
+    const userId = req.user._id;
 
-    const session = await InterviewSession.findOne({ _id: sessionId, supabaseId });
+    const session = await InterviewSession.findOne({ _id: sessionId, userId });
     if (!session) {
       return res.status(404).json({ error: 'Session not found' });
     }
@@ -224,19 +223,19 @@ ${questionsWithAnswers
 // GET /api/interviews/history
 const getHistory = async (req, res, next) => {
   try {
-    const supabaseId = req.supabaseUser.id;
+    const userId = req.user._id;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const [sessions, total] = await Promise.all([
-      InterviewSession.find({ supabaseId, status: 'completed' })
+      InterviewSession.find({ userId, status: 'completed' })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .select('-questions')
         .lean(),
-      InterviewSession.countDocuments({ supabaseId, status: 'completed' }),
+      InterviewSession.countDocuments({ userId, status: 'completed' }),
     ]);
 
     res.json({
@@ -253,7 +252,7 @@ const getSession = async (req, res, next) => {
   try {
     const session = await InterviewSession.findOne({
       _id: req.params.id,
-      supabaseId: req.supabaseUser.id,
+      userId: req.user._id,
     }).lean();
 
     if (!session) return res.status(404).json({ error: 'Session not found' });

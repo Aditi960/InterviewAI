@@ -58,12 +58,6 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="py-20 md:py-28 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-1.5 text-sm text-gray-600 mb-8 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[#00D4E8] animate-pulse" />
-            Now: Web Speech API Integration
-          </div>
-
           <h1 className="font-display text-5xl md:text-6xl font-bold leading-tight text-gray-900 mb-6">
             Ace Your Interviews<br />
             with <span className="text-[#FF6B6B]">AI</span>

@@ -25,9 +25,6 @@ const interviewSessionSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-    },
-    supabaseId: {
-      type: String,
       required: true,
       index: true,
     },
@@ -70,7 +67,7 @@ const interviewSessionSchema = new mongoose.Schema(
   }
 );
 
-interviewSessionSchema.index({ supabaseId: 1, createdAt: -1 });
-interviewSessionSchema.index({ supabaseId: 1, status: 1 });
+interviewSessionSchema.index({ userId: 1, createdAt: -1 });
+interviewSessionSchema.index({ userId: 1, status: 1 });
 
 module.exports = mongoose.model('InterviewSession', interviewSessionSchema);

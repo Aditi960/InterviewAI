@@ -1,4 +1,4 @@
-const { supabase } = require('../config/supabase');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const authMiddleware = async (req, res, next) => {
@@ -10,26 +10,22 @@ const authMiddleware = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    req.supabaseUser = user;
-
-    let dbUser = await User.findOne({ supabaseId: user.id });
-    if (!dbUser) {
-      dbUser = await User.create({
-        supabaseId: user.id,
-        name: user.user_metadata?.full_name || user.email.split('@')[0],
-        email: user.email,
-        avatarUrl: user.user_metadata?.avatar_url || null,
-      });
-    }
-
-    req.user = dbUser;
+    req.user = user;
     next();
   } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expired' });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
     console.error('Auth middleware error:', error);
     res.status(500).json({ error: 'Authentication error' });
   }

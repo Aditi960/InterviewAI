@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
 import {
   LayoutDashboard, Play, History, BarChart3,
-  Settings, LogOut, Menu, X, Zap, Bell, Search,
+  Settings, LogOut, Menu, X, Zap, Bell, Search, Sun, Moon,
 } from 'lucide-react';
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
 
 const Layout = ({ children }) => {
   const { user, signOut } = useAuth();
+  const { darkMode, setDarkMode } = useTheme();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
@@ -37,15 +39,14 @@ const Layout = ({ children }) => {
 
   const Sidebar = ({ mobile = false }) => (
     <aside
-      className={`flex flex-col h-full py-6 px-4 ${mobile ? '' : ''}`}
-      style={{ background: '#fff', borderRight: '1px solid #f1f5f9' }}
+      className={`flex flex-col h-full py-6 px-4 bg-white dark:bg-gray-900 border-r border-slate-100 dark:border-gray-700 ${mobile ? '' : ''}`}
     >
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-2 mb-8">
         <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#06b6d4' }}>
           <Zap size={16} color="white" fill="white" />
         </div>
-        <span className="font-display font-700 text-lg" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700 }}>
+        <span className="dark:text-white" style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: '1.125rem' }}>
           InterviewAI
         </span>
       </div>
@@ -61,7 +62,7 @@ const Layout = ({ children }) => {
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
                   ? 'text-white'
-                  : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-800'
               }`
             }
             style={({ isActive }) => isActive ? { background: '#06b6d4' } : {}}
@@ -75,7 +76,7 @@ const Layout = ({ children }) => {
       {/* Logout */}
       <button
         onClick={handleLogout}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150 mt-4"
+        className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-150 mt-4"
       >
         <LogOut size={18} />
         Logout
@@ -84,7 +85,7 @@ const Layout = ({ children }) => {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#fdf6f6' }}>
+    <div className="flex h-screen overflow-hidden bg-[#fdf6f6] dark:bg-gray-950">
       {/* Desktop Sidebar */}
       <div className="hidden md:flex flex-col w-56 shrink-0">
         <Sidebar />
@@ -101,32 +102,40 @@ const Layout = ({ children }) => {
       )}
 
       {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Topbar */}
-        <header className="flex items-center gap-4 px-6 py-4 bg-white border-b border-slate-100">
-          <button className="md:hidden" onClick={() => setSidebarOpen(true)}>
-            <Menu size={20} className="text-slate-600" />
+        <header className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 bg-white dark:bg-gray-900 border-b border-slate-100 dark:border-gray-700">
+          <button className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center" onClick={() => setSidebarOpen(true)}>
+            <Menu size={20} className="text-slate-600 dark:text-slate-300" />
           </button>
 
           {/* Search */}
-          <div className="flex-1 max-w-xs relative">
+          <div className="flex-1 max-w-[160px] sm:max-w-xs relative">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={searchVal}
               onChange={e => setSearchVal(e.target.value)}
-              placeholder="Search sessions, topics..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-cyan-400 transition-colors"
+              placeholder="Search..."
+              className="w-full pl-9 pr-3 sm:pr-4 py-2 text-sm bg-slate-50 dark:bg-gray-800 border border-slate-200 dark:border-gray-600 rounded-xl outline-none focus:border-cyan-400 transition-colors dark:text-white dark:placeholder-slate-400"
             />
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
-            <button className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center hover:bg-slate-100 transition-colors relative">
-              <Bell size={16} className="text-slate-500" />
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-slate-50 dark:bg-gray-800 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors shrink-0"
+              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {darkMode ? <Sun size={16} className="text-yellow-400" /> : <Moon size={16} className="text-slate-500" />}
+            </button>
+
+            <button className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl bg-slate-50 dark:bg-gray-800 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors relative shrink-0">
+              <Bell size={16} className="text-slate-500 dark:text-slate-400" />
               <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full" style={{ background: '#f97316' }} />
             </button>
 
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white cursor-pointer"
+              className="w-11 h-11 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white cursor-pointer shrink-0"
               style={{ background: '#06b6d4' }}
               title={user?.email}
             >
@@ -145,7 +154,7 @@ const Layout = ({ children }) => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
       </div>

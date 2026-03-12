@@ -1,56 +1,98 @@
+require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
-const { connectDB } = require('./config/db');
-const { errorHandler } = require('./middleware/errorHandler');
+const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 const authRoutes = require('./routes/auth');
 const interviewRoutes = require('./routes/interviews');
 const dashboardRoutes = require('./routes/dashboard');
+const { errorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 
-connectDB();
-
+// ── Security Headers ─────────────────────────────────────────────────────────
 app.use(helmet());
+
+// ── CORS ─────────────────────────────────────────────────────────────────────
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // allow server-to-server requests (no origin)
+    if (!origin) return callback(null, true);
+    // allow any vercel preview deployment
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
+    // allow explicitly whitelisted origins
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS blocked: ${origin}`));
+  },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+// ── Rate Limiting ─────────────────────────────────────────────────────────────
+const globalLimiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 60 * 1000,
+  max: parseInt(process.env.RATE_LIMIT_MAX, 10) || 100,
+  standardHeaders: true,
+  legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
 });
-app.use('/api', limiter);
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10) || 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts, please try again in 15 minutes.' },
+});
+
+const interviewLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: parseInt(process.env.INTERVIEW_RATE_LIMIT_MAX, 10) || 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many interview requests, please slow down.' },
+});
+
+// apply global limiter to all routes
+app.use(globalLimiter);
+
+// ── Body Parsing ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use(morgan('dev'));
-}
+// ── MongoDB ───────────────────────────────────────────────────────────────────
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/interviewai')
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
+// ── Routes ────────────────────────────────────────────────────────────────────
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/interviews', interviewLimiter, interviewRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
+// ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/interviews', interviewRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
+// ── Global Error Handler ──────────────────────────────────────────────────────
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`🚀 InterviewAI server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
+
+module.exports = app;

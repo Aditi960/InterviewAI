@@ -16,11 +16,10 @@ router.post('/start', authMiddleware, async (req, res) => {
   }
 
   // Ensure user exists in MongoDB
-  await User.findOneAndUpdate(
-    { supabaseId: req.user.id },
-    { supabaseId: req.user.id, email: req.user.email },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
+  const user = await User.findById(req.user.id);
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
 
   // Generate AI questions
   const questions = await generateQuestions(role, difficulty, experienceLevel || 'Fresher', resumeText || '');
