@@ -12,6 +12,7 @@ import StartInterview from './pages/StartInterview';
 import InterviewHistory from './pages/InterviewHistory';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
+import AdminLogin from './pages/AdminLogin';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
 
         {/* Protected routes */}
         <Route path="/dashboard" element={
