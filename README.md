@@ -6,9 +6,20 @@ A production-ready AI-powered interview preparation platform built with React, N
 
 ```
 interviewai/
-├── frontend/          # React + Vite + TailwindCSS
-└── backend/           # Node.js + Express + MongoDB
+├── frontend/          # React + Vite + TailwindCSS (primary frontend)
+├── client/            # React + Vite + TailwindCSS (alternative frontend)
+├── backend/           # Node.js + Express + MongoDB (CommonJS)
+└── server/            # Node.js + Express + MongoDB (ES modules)
 ```
+
+### Directory Overview
+
+| Directory | Description |
+|-----------|-------------|
+| **frontend/** | Primary React 18 + Vite frontend with full auth flow, dashboard, interview, analytics, history, and settings pages |
+| **client/** | Alternative React 18 + Vite frontend including landing, login, signup, forgot-password, dashboard, interview, history, analytics, and report pages |
+| **backend/** | Original CommonJS Node.js + Express REST API with controllers, models, middleware, and routes for interviews and dashboard |
+| **server/** | Modern ES-module Node.js + Express REST API with auth routes, AI service layer, JWT middleware, and Mongoose models |
 
 ## 🚀 Quick Start
 
@@ -19,7 +30,16 @@ interviewai/
 
 ---
 
-### Backend Setup
+### Run Everything at Once (root)
+
+```bash
+npm run install:all   # installs backend + frontend dependencies
+npm run dev           # starts backend (:5000) and frontend (:5173) concurrently
+```
+
+---
+
+### Backend Setup (`backend/` — CommonJS)
 
 ```bash
 cd backend
@@ -41,7 +61,29 @@ CLIENT_URL=http://localhost:5173
 
 ---
 
-### Frontend Setup
+### Server Setup (`server/` — ES Modules)
+
+```bash
+cd server
+npm install
+cp .env.example .env
+# Fill in your .env variables
+npm run dev
+```
+
+**Server `.env` variables:**
+```env
+PORT=5000
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/interviewai
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+OPENAI_API_KEY=sk-your-openai-key
+CLIENT_URL=http://localhost:5173
+```
+
+---
+
+### Frontend Setup (`frontend/` — primary UI)
 
 ```bash
 cd frontend
@@ -58,7 +100,19 @@ VITE_API_URL=http://localhost:5000
 
 ---
 
-## 🔐 Authentication
+### Client Setup (`client/` — alternative UI)
+
+```bash
+cd client
+npm install
+npm run dev
+```
+
+The `client/` frontend uses the same environment variables as `frontend/`.
+
+---
+
+## 🔐 Supabase Setup
 
 The app uses custom JWT + bcrypt authentication:
 
@@ -106,8 +160,8 @@ All `/api/*` routes (except auth) require `Authorization: Bearer <jwt-token>` he
 
 | Layer | Tech |
 |-------|------|
-| Frontend | React 18, Vite, TailwindCSS, Recharts |
-| Backend | Node.js, Express, Mongoose |
+| Frontend (frontend/ & client/) | React 18, Vite, TailwindCSS, Recharts, Lucide React |
+| Backend (backend/ & server/) | Node.js, Express, Mongoose |
 | Database | MongoDB Atlas |
 | Auth | JWT + bcrypt (custom) |
 | AI | OpenAI GPT-4o-mini |
@@ -123,6 +177,15 @@ All `/api/*` routes (except auth) require `Authorization: Bearer <jwt-token>` he
 - `backend/src/routes/auth.js` — Register and login endpoints
 - `backend/src/controllers/interviewController.js` — AI question generation & evaluation
 - `backend/src/controllers/dashboardController.js` — Stats aggregation queries
+
+**server/ (ES modules API)**
+- `server/middleware/` — JWT auth middleware
+- `server/services/aiService.js` — OpenAI integration service
+- `server/models/InterviewSession.js` — Mongoose interview session model
+- `server/models/User.js` — Mongoose user model
+- `server/routes/auth.js` — Authentication routes
+- `server/routes/interviews.js` — Interview CRUD & evaluation routes
+- `server/routes/dashboard.js` — Dashboard stats routes
 
 ---
 
@@ -142,14 +205,24 @@ All `/api/*` routes (except auth) require `Authorization: Bearer <jwt-token>` he
 
 ### Frontend → Vercel
 ```bash
-cd frontend
-npm run build
+# Primary frontend
+cd frontend && npm run build
+# Deploy dist/ folder to Vercel
+
+# Or alternative frontend
+cd client && npm run build
 # Deploy dist/ folder to Vercel
 ```
 
 ### Backend → Railway / Render
 ```bash
+# CommonJS backend
 cd backend
+# Set env vars in platform dashboard
+npm start
+
+# Or ES-module server
+cd server
 # Set env vars in platform dashboard
 npm start
 ```
