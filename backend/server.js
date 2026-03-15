@@ -5,10 +5,12 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const authRoutes = require('./routes/auth');
 const interviewRoutes = require('./routes/interviews');
 const dashboardRoutes = require('./routes/dashboard');
 const { errorHandler } = require('./middleware/errorHandler');
+const User = require('./models/User');
 
 dotenv.config();
 
@@ -86,6 +88,23 @@ app.use('/api/dashboard', dashboardRoutes);
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ── One-time Admin Creation ───────────────────────────────────────────────────
+app.get('/create-admin-once', async (req, res) => {
+  try {
+    await User.deleteOne({ email: 'admin@interviewai.com' });
+    const hashedPassword = await bcrypt.hash('Admin@123', 12);
+    const admin = await User.create({
+      name: 'Admin',
+      email: 'admin@interviewai.com',
+      password: hashedPassword,
+      role: 'admin',
+    });
+    res.status(201).json({ message: 'Admin user created', admin });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create admin', details: err.message });
+  }
 });
 
 // ── Global Error Handler ──────────────────────────────────────────────────────
