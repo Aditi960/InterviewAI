@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
-import axios from '../lib/api';
+import axios from 'axios';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const AdminLogin = () => {
@@ -16,18 +16,25 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Admin login form submitted');
     setLoading(true);
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
+      console.log('Sending login request to backend...');
+      const response = await axios.post('https://interviewai-6dei.onrender.com/api/auth/login', { email, password });
+      console.log('Login response received, user role:', response.data.user?.role);
       const { token, user } = response.data;
       if (user.role !== 'admin') {
+        console.log('User is not an admin, access denied');
         toast.error('Access denied. Not an admin.');
         return;
       }
+      console.log('Admin verified, saving token and user to localStorage');
       localStorage.setItem('adminToken', token);
       localStorage.setItem('adminUser', JSON.stringify(user));
+      console.log('Navigating to /admin/dashboard');
       navigate('/admin/dashboard');
     } catch (err) {
+      console.error('Admin login error:', err);
       const message = err.response?.data?.message || err.response?.data?.error || 'Login failed';
       toast.error(message);
     } finally {
