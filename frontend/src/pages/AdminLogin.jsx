@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
-import api from '../lib/api';
+import axios from 'axios';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const AdminLogin = () => {
@@ -16,26 +16,19 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !password) return toast.error('Please fill all fields');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast.error('Please enter a valid email address');
-    if (password.length < 6) return toast.error('Password must be at least 6 characters');
-    setLoading(true);
     try {
-      const { data } = await api.post('/api/auth/login', { email, password });
-      if (data.user.role !== 'admin') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+      const response = await axios.post('/api/auth/login', { email, password });
+      const { token, user } = response.data;
+      if (user.role !== 'admin') {
         toast.error('Access denied. Not an admin.');
         return;
       }
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      toast.success('Welcome back, Admin!');
-      navigate('/admin/dashboard', { replace: true });
+      localStorage.setItem('adminToken', token);
+      localStorage.setItem('adminUser', JSON.stringify(user));
+      navigate('/admin/dashboard');
     } catch (err) {
-      toast.error(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
+      const message = err.response?.data?.message || err.response?.data?.error || 'Login failed';
+      toast.error(message);
     }
   };
 

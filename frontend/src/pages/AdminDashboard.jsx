@@ -13,6 +13,14 @@ const AdminDashboard = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    if (!token || user.role !== 'admin') {
+      navigate('/admin/login');
+    }
+  }, []);
+
   const fetchUsers = async () => {
     try {
       const res = await api.get('/api/admin/users');
@@ -56,8 +64,8 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
     navigate('/admin/login');
   };
 
