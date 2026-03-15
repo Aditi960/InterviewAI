@@ -60,6 +60,25 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
+app.get('/create-admin-once', async (req, res) => {
+  try {
+    const User = require('./models/User');
+    const bcrypt = require('bcryptjs');
+    await User.deleteOne({ email: 'admin@interviewai.com' });
+    const password = await bcrypt.hash('Admin@123', 12);
+    await User.create({
+      name: 'Admin',
+      email: 'admin@interviewai.com',
+      password,
+      role: 'admin',
+      supabaseId: 'admin-manual'
+    });
+    res.json({ message: 'Admin created successfully!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
