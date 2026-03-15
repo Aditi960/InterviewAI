@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import toast from 'react-hot-toast';
-import axios from 'axios';
+import axios from '../lib/api';
 import { Shield, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
 const AdminLogin = () => {
