@@ -16,6 +16,7 @@ const AdminLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post('/api/auth/login', { email, password });
       const { token, user } = response.data;
@@ -29,6 +30,8 @@ const AdminLogin = () => {
     } catch (err) {
       const message = err.response?.data?.message || err.response?.data?.error || 'Login failed';
       toast.error(message);
+    } finally {
+      setLoading(false);
     }
   };
 
