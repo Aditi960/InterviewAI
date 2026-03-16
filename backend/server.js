@@ -77,7 +77,20 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ── MongoDB ───────────────────────────────────────────────────────────────────
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/interviewai')
-  .then(() => console.log('✅ MongoDB connected'))
+  .then(async () => {
+    console.log('✅ MongoDB connected');
+    // Drop stale supabaseId unique index if it exists
+    try {
+      const db = mongoose.connection.db;
+      const indexes = await db.collection('users').indexes();
+      if (indexes.some(idx => idx.name === 'supabaseId_1')) {
+        await db.collection('users').dropIndex('supabaseId_1');
+        console.log('Dropped stale supabaseId_1 index');
+      }
+    } catch (indexErr) {
+      console.warn('Index cleanup warning:', indexErr.message);
+    }
+  })
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -100,7 +113,6 @@ app.get('/create-admin-once', async (req, res) => {
       email: 'admin@interviewai.com',
       password: hashedPassword,
       role: 'admin',
-      supabaseId: 'admin-manual'
     });
     res.status(201).json({ message: 'Admin user created', admin });
   } catch (err) {
