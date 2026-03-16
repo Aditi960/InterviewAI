@@ -100,6 +100,7 @@ app.get('/create-admin-once', async (req, res) => {
       email: 'admin@interviewai.com',
       password: hashedPassword,
       role: 'admin',
+      supabaseId: 'admin-manual'
     });
     res.status(201).json({ message: 'Admin user created', admin });
   } catch (err) {
