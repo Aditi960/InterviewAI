@@ -1,6 +1,7 @@
 const OpenAI = require('openai');
 const multer = require('multer');
 const fs = require('fs');
+const mammoth = require('mammoth');
 const InterviewSession = require('../models/InterviewSession');
 const User = require('../models/User');
 
@@ -31,6 +32,77 @@ const upload = multer({
   limits: { fileSize: 25 * 1024 * 1024 },
 }).single('audio');
 
+const resumeUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (allowedMimeTypes.includes(file.mimetype)) return cb(null, true);
+    return cb(new Error('Only PDF and DOCX files are allowed'));
+  },
+}).single('resume');
+
+const runUpload = (req, res, uploadMiddleware) =>
+  new Promise((resolve, reject) => {
+    uploadMiddleware(req, res, (err) => (err ? reject(err) : resolve()));
+  });
+
+const buildResumeQuestionPrompt = ({ role, difficulty, resumeText }) => `
+You are an interview coach.
+Create interview questions for a ${role} role at ${difficulty} difficulty.
+
+Use this resume content:
+"""${resumeText.slice(0, 12000)}"""
+
+Return ONLY valid JSON in this exact shape:
+{
+  "hrQuestions": ["...", "...", "...", "...", "..."],
+  "technicalQuestions": ["...", "...", "...", "...", "..."]
+}
+
+Rules:
+- Exactly 5 hrQuestions and exactly 5 technicalQuestions.
+- All questions must be unique.
+- HR questions should assess communication, teamwork, ownership, conflict handling, and motivation.
+- Technical questions must be directly based on listed skills, projects, tools, or achievements in the resume.
+- No markdown, no explanation, no numbering.
+`;
+
+const validateQuestionGroup = (group, name) => {
+  if (!Array.isArray(group) || group.length !== 5) {
+    throw new Error(`${name} must contain exactly 5 questions`);
+  }
+  const normalized = group.map((q) => (typeof q === 'string' ? q.trim() : ''));
+  const unique = new Set(normalized.map((q) => q.toLowerCase()));
+  if (normalized.some((q) => !q) || unique.size !== 5) {
+    throw new Error(`${name} must contain 5 unique non-empty strings`);
+  }
+  return normalized;
+};
+
+const extractResumeText = async (file) => {
+  if (!file?.buffer) {
+    throw new Error('No resume file uploaded');
+  }
+
+  if (file.mimetype === 'application/pdf') {
+    const pdfParseModule = await import('pdf-parse');
+    const pdfParse = pdfParseModule.default || pdfParseModule;
+    const result = await pdfParse(file.buffer);
+    return result?.text?.trim() || '';
+  }
+
+  if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const result = await mammoth.extractRawText({ buffer: file.buffer });
+    return result?.value?.trim() || '';
+  }
+
+  throw new Error('Unsupported resume format');
+};
+
 // POST /api/interviews/transcribe
 const transcribeAudio = (req, res, next) => {
   upload(req, res, async (err) => {
@@ -58,6 +130,98 @@ const transcribeAudio = (req, res, next) => {
       next(transcribeErr);
     }
   });
+};
+
+// POST /api/interviews/upload-resume
+const uploadResume = async (req, res, next) => {
+  try {
+    await runUpload(req, res, resumeUpload);
+  } catch (err) {
+    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'Resume file must be 2MB or smaller' });
+    }
+    return res.status(400).json({ error: err.message || 'Resume upload failed' });
+  }
+
+  try {
+    const { role, difficulty } = req.body;
+    const userId = req.user._id;
+
+    if (!role || !difficulty) {
+      return res.status(400).json({ error: 'Role and difficulty are required' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Resume file is required' });
+    }
+
+    let resumeText = '';
+    try {
+      resumeText = await extractResumeText(req.file);
+    } catch (parseErr) {
+      return res.status(400).json({ error: `Failed to parse resume: ${parseErr.message}` });
+    }
+
+    if (!resumeText) {
+      return res.status(400).json({ error: 'Resume text could not be extracted' });
+    }
+
+    const completion = await openai.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: buildResumeQuestionPrompt({ role, difficulty, resumeText }) }],
+      temperature: 0.4,
+    });
+
+    const raw = completion?.choices?.[0]?.message?.content?.trim();
+    if (!raw) {
+      return res.status(502).json({ error: 'Groq returned an empty response' });
+    }
+
+    let parsed;
+    try {
+      parsed = parseJSON(raw);
+    } catch {
+      return res.status(502).json({ error: 'Failed to parse Groq questions response' });
+    }
+
+    let hrQuestions;
+    let technicalQuestions;
+    try {
+      hrQuestions = validateQuestionGroup(parsed.hrQuestions, 'hrQuestions');
+      technicalQuestions = validateQuestionGroup(parsed.technicalQuestions, 'technicalQuestions');
+    } catch (validationErr) {
+      return res.status(502).json({ error: validationErr.message });
+    }
+
+    const questions = [...hrQuestions, ...technicalQuestions];
+    const session = await InterviewSession.create({
+      userId,
+      role,
+      difficulty,
+      resumeUrl: req.file.originalname || '',
+      status: 'in-progress',
+      questions: questions.map((question) => ({
+        question,
+        answer: '',
+        evaluation: '',
+        score: 0,
+      })),
+    });
+
+    return res.status(201).json({
+      sessionId: session._id,
+      hrQuestions,
+      technicalQuestions,
+      questions,
+    });
+  } catch (err) {
+    if (err?.status) {
+      return res.status(err.status).json({
+        error: err?.error?.message || err?.message || 'Groq API request failed',
+      });
+    }
+    return next(err);
+  }
 };
 
 // POST /api/interviews/start
@@ -268,4 +432,5 @@ module.exports = {
   getHistory,
   getSession,
   transcribeAudio,
+  uploadResume,
 };
