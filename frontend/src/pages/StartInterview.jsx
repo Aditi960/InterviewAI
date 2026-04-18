@@ -13,6 +13,7 @@ const DIFFICULTIES = [
   { key: 'MEDIUM', label: 'Medium', desc: 'Intermediate, practical mix', color: '#eab308' },
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
+const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
 
 const StartInterview = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const StartInterview = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
+  const [generatedQuestions, setGeneratedQuestions] = useState({ hrQuestions: [], technicalQuestions: [] });
   const [answers, setAnswers] = useState([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -51,7 +53,7 @@ const StartInterview = () => {
   });
 
   useEffect(() => {
-    if (step === 2) {
+    if (step === 3) {
       startTimeRef.current = Date.now();
       timerRef.current = setInterval(() => setTimer(t => t + 1), 1000);
     }
@@ -116,20 +118,34 @@ const StartInterview = () => {
   }, [currentQ]);
 
   useEffect(() => {
-    if (step !== 2 || !session?.questions?.length) return;
+    if (step !== 3 || !session?.questions?.length) return;
     void speakQuestion(currentQ);
   }, [step, currentQ, session, speakQuestion]);
 
   const formatTime = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
-  const startInterview = async () => {
+  const generateQuestions = async () => {
     if (!role) return toast.error('Select a role');
     if (!difficulty) return toast.error('Select difficulty');
+    if (!resumeFile) return toast.error('Upload your resume (PDF or DOCX)');
+
     setLoading(true);
     try {
-      const res = await api.post('/api/interviews/start', { role, difficulty });
-      setSession(res.data);
+      const formData = new FormData();
+      formData.append('role', role);
+      formData.append('difficulty', difficulty);
+      formData.append('resume', resumeFile);
+
+      const res = await api.post('/api/interviews/upload-resume', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      setSession({ sessionId: res.data.sessionId, questions: res.data.questions });
+      setGeneratedQuestions({
+        hrQuestions: res.data.hrQuestions || [],
+        technicalQuestions: res.data.technicalQuestions || [],
+      });
       setAnswers(new Array(res.data.questions.length).fill(''));
       setCurrentQ(0);
       setCurrentAnswer('');
@@ -140,6 +156,10 @@ const StartInterview = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const beginInterview = () => {
+    setStep(3);
   };
 
   const handleAnswerSubmit = async () => {
@@ -200,7 +220,7 @@ const StartInterview = () => {
   };
 
   useEffect(() => {
-    if (step !== 2) return;
+    if (step !== 3) return;
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = '';
@@ -278,10 +298,10 @@ const StartInterview = () => {
       <div className="p-4 sm:p-6 mb-5 sm:mb-7" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <h3 className="text-sm sm:text-[15px] font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
           3. Upload Resume{' '}
-          <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: 13 }}>(Optional)</span>
+          <span style={{ color: '#94a3b8', fontWeight: 400, fontSize: 13 }}>(Required)</span>
         </h3>
         <p className="text-xs sm:text-[13px] mb-3 sm:mb-4" style={{ color: '#94a3b8' }}>
-          PDF format, used to personalise questions to your experience.
+          PDF or DOCX format (max 2MB), used to personalise questions to your experience.
         </p>
         <label
           className="flex flex-col items-center gap-2 p-5 sm:p-6 cursor-pointer"
@@ -292,37 +312,112 @@ const StartInterview = () => {
         >
           <Upload size={24} color="#06b6d4" />
           <span className="text-sm" style={{ color: darkMode ? '#94a3b8' : '#64748b' }}>
-            {resumeFile ? resumeFile.name : 'Click to upload PDF'}
+            {resumeFile ? resumeFile.name : 'Click to upload PDF/DOCX'}
           </span>
           <input
             type="file"
-            accept=".pdf"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             style={{ display: 'none' }}
-            onChange={e => setResumeFile(e.target.files[0])}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              if (file.size > MAX_RESUME_FILE_SIZE) {
+                toast.error('Resume must be 2MB or smaller');
+                e.target.value = '';
+                return;
+              }
+              setResumeFile(file);
+            }}
           />
         </label>
       </div>
 
       <button
-        onClick={startInterview}
-        disabled={loading || !role || !difficulty}
+        onClick={generateQuestions}
+        disabled={loading || !role || !difficulty || !resumeFile}
         className="w-full min-h-[48px] text-sm sm:text-base font-semibold"
         style={{
-          background: (!role || !difficulty || loading) ? '#94a3b8' : '#06b6d4',
+          background: (!role || !difficulty || !resumeFile || loading) ? '#94a3b8' : '#06b6d4',
           color: 'white', border: 'none', borderRadius: 14, padding: '15px',
-          cursor: (!role || !difficulty || loading) ? 'not-allowed' : 'pointer',
+          cursor: (!role || !difficulty || !resumeFile || loading) ? 'not-allowed' : 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           gap: 8, fontFamily: 'inherit',
         }}
       >
-        {loading ? 'Generating Questions...' : 'Start Interview'} <ChevronRight size={18} />
+        {loading ? 'Generating Questions...' : 'Generate Resume-Based Questions'} <ChevronRight size={18} />
       </button>
     </div>
   );
 
-  // ─── Step 2: Interview ─────────────────────────────────────────────────────
+  // ─── Step 2: Question Preview ──────────────────────────────────────────────
 
   if (step === 2 && session) {
+    return (
+      <div className="max-w-[760px] mx-auto">
+        <h2 className="text-lg sm:text-[22px] font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
+          Review Generated Questions
+        </h2>
+        <p className="text-xs sm:text-[13px] mb-5" style={{ color: '#94a3b8' }}>
+          We generated {generatedQuestions.hrQuestions.length} HR and {generatedQuestions.technicalQuestions.length} technical questions from your resume.
+        </p>
+
+        <div className="p-4 sm:p-6 mb-4" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 className="text-sm sm:text-[15px] font-bold mb-3" style={{ fontFamily: 'Syne, sans-serif', color: '#06b6d4' }}>
+            HR Questions
+          </h3>
+          <div className="space-y-2">
+            {generatedQuestions.hrQuestions.map((q, i) => (
+              <div key={`hr-${i}`} className="text-sm" style={{ color: darkMode ? '#e2e8f0' : '#334155' }}>
+                {i + 1}. {q}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-6 mb-6" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <h3 className="text-sm sm:text-[15px] font-bold mb-3" style={{ fontFamily: 'Syne, sans-serif', color: '#06b6d4' }}>
+            Technical Questions
+          </h3>
+          <div className="space-y-2">
+            {generatedQuestions.technicalQuestions.map((q, i) => (
+              <div key={`tech-${i}`} className="text-sm" style={{ color: darkMode ? '#e2e8f0' : '#334155' }}>
+                {i + 1}. {q}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <button
+            onClick={() => setStep(1)}
+            className="min-h-[44px] flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-medium w-full sm:w-auto"
+            style={{
+              borderRadius: 12,
+              border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: darkMode ? '#0f172a' : 'white',
+              cursor: 'pointer', color: '#475569', fontFamily: 'inherit',
+            }}
+          >
+            <ChevronLeft size={16} /> Back
+          </button>
+          <button
+            onClick={beginInterview}
+            className="min-h-[44px] flex-1 flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-semibold"
+            style={{
+              borderRadius: 12, border: 'none',
+              background: '#06b6d4', color: 'white',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            Start Interview <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Step 3: Interview ─────────────────────────────────────────────────────
+
+  if (step === 3 && session) {
     const questions = session.questions;
     const progress = ((currentQ + 1) / questions.length) * 100;
 
