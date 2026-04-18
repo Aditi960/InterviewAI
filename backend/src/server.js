@@ -85,6 +85,9 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+console.log('authMiddleware:', typeof authMiddleware);
+console.log('adminMiddleware:', typeof adminMiddleware);
+console.log('adminRoutes:', typeof adminRoutes);
 app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
 
 app.use((req, res) => {
