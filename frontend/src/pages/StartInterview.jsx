@@ -142,7 +142,7 @@ const StartInterview = () => {
     }
   };
 
-  const saveAnswer = async () => {
+  const handleAnswerSubmit = async () => {
     stopRecording();
     if (!currentAnswer.trim()) {
       toast.error('Please provide an answer before continuing');
@@ -475,7 +475,7 @@ const StartInterview = () => {
 
           {currentQ < questions.length - 1 ? (
             <button
-              onClick={() => void saveAnswer()}
+              onClick={() => void handleAnswerSubmit()}
               disabled={loading}
               className="min-h-[44px] flex-1 flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-semibold"
               style={{
@@ -488,7 +488,7 @@ const StartInterview = () => {
             </button>
           ) : (
             <button
-              onClick={() => void saveAnswer()}
+              onClick={() => void handleAnswerSubmit()}
               disabled={loading}
               className="min-h-[44px] flex-1 flex items-center justify-center gap-2 px-4 sm:px-5 py-3 text-sm font-semibold"
               style={{

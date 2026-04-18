@@ -84,7 +84,7 @@ const startInterview = async (req, res, next) => {
         return res.status(502).json({ error: 'Groq returned an empty response' });
       }
     } catch (groqErr) {
-      const message = groqErr?.error?.message || groqErr?.message || 'Failed to generate interview questions';
+      const message = groqErr?.error?.message || groqErr?.message || 'Groq API failed to generate interview questions';
       const status = groqErr?.status && Number.isInteger(groqErr.status) ? groqErr.status : 502;
       return res.status(status).json({ error: message });
     }
