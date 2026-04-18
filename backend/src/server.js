@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
-const { errorHandler } = require('./middleware/errorHandler');
+const errorHandler = require('./middleware/errorHandler');
 const authMiddleware = require('./middleware/authMiddleware');
 const adminMiddleware = require('./middleware/adminMiddleware');
 const authRoutes = require('./routes/auth');
@@ -85,9 +85,6 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/interviews', interviewRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-console.log('authMiddleware:', typeof authMiddleware);
-console.log('adminMiddleware:', typeof adminMiddleware);
-console.log('adminRoutes:', typeof adminRoutes);
 app.use('/api/admin', authMiddleware, adminMiddleware, adminRoutes);
 
 app.use((req, res) => {
