@@ -1,8 +1,9 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const dotenv = require('dotenv');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
@@ -12,8 +13,6 @@ const authRoutes = require('./routes/auth');
 const interviewRoutes = require('./routes/interviews');
 const dashboardRoutes = require('./routes/dashboard');
 const adminRoutes = require('./routes/admin');
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

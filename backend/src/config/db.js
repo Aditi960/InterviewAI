@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
+  console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Found' : 'UNDEFINED');
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB Connected:', conn.connection.host);
 
     // Drop stale supabaseId unique index if it exists
