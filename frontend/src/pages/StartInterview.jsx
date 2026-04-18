@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Vapi from '@vapi-ai/web';
 import api from '../lib/api';
@@ -29,6 +29,7 @@ const StartInterview = () => {
   const [timer, setTimer] = useState(0);
   const [muted, setMuted] = useState(false);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const timerRef = useRef(null);
   const startTimeRef = useRef(null);
   const vapiRef = useRef(null);
@@ -63,12 +64,13 @@ const StartInterview = () => {
     };
   }, [step]);
 
-  const speakQuestion = async () => {
-    console.log("ElevenLabs key:", import.meta.env.VITE_ELEVENLABS_API_KEY);
-    const question = session?.questions[currentQ]?.question;
+  const speakQuestion = useCallback(async (questionIndex = currentQ) => {
+    if (muted) return;
+    const question = session?.questions?.[questionIndex];
     if (!question) return;
 
     try {
+      setIsSpeaking(true);
       const response = await fetch(
         "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM",
         {
@@ -96,14 +98,15 @@ const StartInterview = () => {
       const audio = new Audio(audioUrl);
       audio.play();
     } catch (err) {
-      console.error("ElevenLabs error:", err);
       // fallback to browser TTS
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(question);
       utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
+    } finally {
+      setIsSpeaking(false);
     }
-  };
+  }, [currentQ, muted, session]);
 
   useEffect(() => {
     return () => {
@@ -111,6 +114,11 @@ const StartInterview = () => {
       window.speechSynthesis.cancel();
     };
   }, [currentQ]);
+
+  useEffect(() => {
+    if (step !== 2 || !session?.questions?.length) return;
+    void speakQuestion(currentQ);
+  }, [step, currentQ, session, speakQuestion]);
 
   const formatTime = (s) =>
     `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
@@ -123,6 +131,9 @@ const StartInterview = () => {
       const res = await api.post('/api/interviews/start', { role, difficulty });
       setSession(res.data);
       setAnswers(new Array(res.data.questions.length).fill(''));
+      setCurrentQ(0);
+      setCurrentAnswer('');
+      setTimer(0);
       setStep(2);
     } catch (err) {
       toast.error(err.message || 'Failed to start interview');
@@ -131,15 +142,24 @@ const StartInterview = () => {
     }
   };
 
-  const saveAnswer = () => {
+  const saveAnswer = async () => {
     stopRecording();
+    if (!currentAnswer.trim()) {
+      toast.error('Please provide an answer before continuing');
+      return;
+    }
+
     const newAnswers = [...answers];
     newAnswers[currentQ] = currentAnswer;
     setAnswers(newAnswers);
+
     if (currentQ < session.questions.length - 1) {
       setCurrentQ(currentQ + 1);
       setCurrentAnswer(newAnswers[currentQ + 1] || '');
+      return;
     }
+
+    await submitInterview(newAnswers);
   };
 
   const goToQuestion = (index) => {
@@ -156,10 +176,12 @@ const StartInterview = () => {
     setShowEndModal(true);
   };
 
-  const submitInterview = async () => {
+  const submitInterview = async (providedAnswers) => {
     stopRecording();
-    const finalAnswers = [...answers];
-    finalAnswers[currentQ] = currentAnswer;
+    const finalAnswers = providedAnswers || [...answers];
+    if (!providedAnswers) {
+      finalAnswers[currentQ] = currentAnswer;
+    }
     setLoading(true);
     const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
     try {
@@ -338,7 +360,7 @@ const StartInterview = () => {
         {/* Progress bar */}
         <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-[14px_20px] mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <span className="text-xs sm:text-[13px] font-medium whitespace-nowrap" style={{ color: '#64748b' }}>
-            Q {currentQ + 1}/{questions.length}
+            Question {currentQ + 1} of {questions.length}
           </span>
           <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 3, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${progress}%`, background: '#06b6d4', borderRadius: 3, transition: 'width 0.3s ease' }} />
@@ -349,19 +371,20 @@ const StartInterview = () => {
         {/* Question */}
         <div className="p-4 sm:p-7 mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div className="inline-flex items-center gap-1.5 mb-3 sm:mb-4 text-xs font-semibold tracking-wide" style={{ background: '#e0f7fa', color: '#0891b2', padding: '4px 12px', borderRadius: 100 }}>
-            Q{currentQ + 1} · {questions[currentQ]?.topic}
+            Question {currentQ + 1}
           </div>
           <div className="flex items-start gap-2">
             <p className="text-base sm:text-lg font-semibold leading-relaxed m-0" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
-              {questions[currentQ]?.question}
+              {questions[currentQ]}
             </p>
             <button
-              onClick={speakQuestion}
+              onClick={() => void speakQuestion()}
               title="Read question aloud"
               aria-label="Read question aloud"
+              disabled={isSpeaking}
               className="min-w-[36px] min-h-[36px] flex items-center justify-center shrink-0"
               style={{
-                background: 'none', border: 'none', cursor: 'pointer',
+                background: 'none', border: 'none', cursor: isSpeaking ? 'not-allowed' : 'pointer',
                 fontSize: 20, padding: 4, borderRadius: 8,
               }}
             >
@@ -452,19 +475,20 @@ const StartInterview = () => {
 
           {currentQ < questions.length - 1 ? (
             <button
-              onClick={saveAnswer}
+              onClick={() => void saveAnswer()}
+              disabled={loading}
               className="min-h-[44px] flex-1 flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-semibold"
               style={{
                 borderRadius: 12, border: 'none',
                 background: '#06b6d4', color: 'white',
-                cursor: 'pointer', fontFamily: 'inherit',
+                cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
               }}
             >
               Next Question <ChevronRight size={16} />
             </button>
           ) : (
             <button
-              onClick={openEndModal}
+              onClick={() => void saveAnswer()}
               disabled={loading}
               className="min-h-[44px] flex-1 flex items-center justify-center gap-2 px-4 sm:px-5 py-3 text-sm font-semibold"
               style={{
@@ -474,7 +498,7 @@ const StartInterview = () => {
                 fontFamily: 'inherit',
               }}
             >
-              {loading ? 'Evaluating…' : <><Send size={16} /> Submit & Get Results</>}
+              {loading ? 'Evaluating…' : <><Send size={16} /> Submit Answer</>}
             </button>
           )}
         </div>
@@ -526,7 +550,7 @@ const StartInterview = () => {
                   Continue
                 </button>
                 <button
-                  onClick={() => { setShowEndModal(false); submitInterview(); }}
+                  onClick={() => { setShowEndModal(false); void submitInterview(); }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                   style={{ background: '#ef4444', color: 'white', border: 'none', cursor: 'pointer' }}
                 >
