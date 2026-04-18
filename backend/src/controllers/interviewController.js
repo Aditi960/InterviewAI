@@ -70,48 +70,52 @@ const startInterview = async (req, res, next) => {
       return res.status(400).json({ error: 'Role and difficulty are required' });
     }
 
-    const difficultyMap = {
-      EASY: 'beginner-level',
-      MEDIUM: 'intermediate-level',
-      HARD: 'senior-level',
-    };
+    const systemPrompt = `Generate exactly 10 unique technical interview questions for a ${role} developer at ${difficulty} difficulty. Return only a JSON array of 10 question strings. No explanations, no numbering, just the array. Make these questions different from typical common questions. Be creative and specific.`;
 
-    const prompt = `
-Generate 5 ${difficultyMap[difficulty]} interview questions for a ${role}.
-
-Return ONLY a valid JSON array. No markdown, no code fences, no explanation.
-
-[
-  {
-    "question": "text",
-    "topic": "one of: ${(ROLE_TOPICS[role] || ['General']).join(', ')}",
-    "expectedAnswer": "key points"
-  }
-]
-`;
-
-    const completion = await openai.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-    });
-
-    const raw = completion.choices[0].message.content.trim();
+    let raw = '';
+    try {
+      const completion = await openai.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: [{ role: 'system', content: systemPrompt }],
+        temperature: 0.8,
+      });
+      raw = completion?.choices?.[0]?.message?.content?.trim() || '';
+      if (!raw) {
+        return res.status(502).json({ error: 'Groq returned an empty response' });
+      }
+    } catch (groqErr) {
+      const message = groqErr?.error?.message || groqErr?.message || 'Groq API failed to generate interview questions';
+      const status = groqErr?.status && Number.isInteger(groqErr.status) ? groqErr.status : 502;
+      return res.status(status).json({ error: message });
+    }
 
     let questions;
     try {
       questions = parseJSON(raw);
     } catch {
-      return res.status(500).json({ error: 'Failed to parse AI questions', raw });
+      return res.status(502).json({ error: 'Failed to parse Groq questions response as JSON array' });
+    }
+
+    const normalizedQuestions = Array.isArray(questions)
+      ? questions.map((q) => (typeof q === 'string' ? q.trim() : ''))
+      : [];
+    const uniqueQuestions = new Set(normalizedQuestions.map((q) => q.toLowerCase()));
+
+    if (
+      normalizedQuestions.length !== 10
+      || normalizedQuestions.some((q) => !q)
+      || uniqueQuestions.size !== 10
+    ) {
+      return res.status(502).json({ error: 'Groq response must be a JSON array of 10 unique question strings' });
     }
 
     const session = await InterviewSession.create({
-      userId: req.user._id,
+      userId,
       role,
       difficulty,
       status: 'in-progress',
-      questions: questions.map((q) => ({
-        question: q.question,
+      questions: normalizedQuestions.map((question) => ({
+        question,
         answer: '',
         evaluation: '',
         score: 0,
@@ -120,11 +124,7 @@ Return ONLY a valid JSON array. No markdown, no code fences, no explanation.
 
     res.status(201).json({
       sessionId: session._id,
-      questions: questions.map((q, i) => ({
-        id: i,
-        question: q.question,
-        topic: q.topic,
-      })),
+      questions: normalizedQuestions,
     });
   } catch (err) {
     next(err);
