@@ -13,6 +13,7 @@ const DIFFICULTIES = [
   { key: 'MEDIUM', label: 'Medium', desc: 'Intermediate, practical mix', color: '#eab308' },
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
+const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
 
 const StartInterview = () => {
   const navigate = useNavigate();
@@ -320,7 +321,7 @@ const StartInterview = () => {
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
-              if (file.size > 2 * 1024 * 1024) {
+              if (file.size > MAX_RESUME_FILE_SIZE) {
                 toast.error('Resume must be 2MB or smaller');
                 e.target.value = '';
                 return;
@@ -357,7 +358,7 @@ const StartInterview = () => {
           Review Generated Questions
         </h2>
         <p className="text-xs sm:text-[13px] mb-5" style={{ color: '#94a3b8' }}>
-          We generated 5 HR and 5 technical questions from your resume.
+          We generated {generatedQuestions.hrQuestions.length} HR and {generatedQuestions.technicalQuestions.length} technical questions from your resume.
         </p>
 
         <div className="p-4 sm:p-6 mb-4" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>

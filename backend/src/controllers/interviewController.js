@@ -10,6 +10,9 @@ const openai = new OpenAI({
   baseURL: 'https://api.groq.com/openai/v1',
 });
 
+const MAX_RESUME_TEXT_CHARS = 12000;
+const QUESTIONS_PER_CATEGORY = 5;
+
 const ROLE_TOPICS = {
   'Frontend Developer': ['React', 'JavaScript', 'CSS', 'HTML', 'Performance'],
   'Backend Engineer': ['Node.js', 'APIs', 'Databases', 'System Design', 'Security'],
@@ -55,7 +58,7 @@ You are an interview coach.
 Create interview questions for a ${role} role at ${difficulty} difficulty.
 
 Use this resume content:
-"""${resumeText.slice(0, 12000)}"""
+"""${resumeText.slice(0, MAX_RESUME_TEXT_CHARS)}"""
 
 Return ONLY valid JSON in this exact shape:
 {
@@ -64,7 +67,7 @@ Return ONLY valid JSON in this exact shape:
 }
 
 Rules:
-- Exactly 5 hrQuestions and exactly 5 technicalQuestions.
+- Exactly ${QUESTIONS_PER_CATEGORY} hrQuestions and exactly ${QUESTIONS_PER_CATEGORY} technicalQuestions.
 - All questions must be unique.
 - HR questions should assess communication, teamwork, ownership, conflict handling, and motivation.
 - Technical questions must be directly based on listed skills, projects, tools, or achievements in the resume.
@@ -72,13 +75,13 @@ Rules:
 `;
 
 const validateQuestionGroup = (group, name) => {
-  if (!Array.isArray(group) || group.length !== 5) {
-    throw new Error(`${name} must contain exactly 5 questions`);
+  if (!Array.isArray(group) || group.length !== QUESTIONS_PER_CATEGORY) {
+    throw new Error(`${name} must contain exactly ${QUESTIONS_PER_CATEGORY} questions`);
   }
   const normalized = group.map((q) => (typeof q === 'string' ? q.trim() : ''));
   const unique = new Set(normalized.map((q) => q.toLowerCase()));
-  if (normalized.some((q) => !q) || unique.size !== 5) {
-    throw new Error(`${name} must contain 5 unique non-empty strings`);
+  if (normalized.some((q) => !q) || unique.size !== QUESTIONS_PER_CATEGORY) {
+    throw new Error(`${name} must contain ${QUESTIONS_PER_CATEGORY} unique non-empty strings`);
   }
   return normalized;
 };
