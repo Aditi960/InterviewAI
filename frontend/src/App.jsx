@@ -42,7 +42,7 @@ const App = () => {
             <Layout><InterviewHistory /></Layout>
           </ProtectedRoute>
         } />
-        <Route path="/history/:id" element={
+        <Route path="/dashboard/session/:id" element={
           <ProtectedRoute>
             <Layout><InterviewHistory /></Layout>
           </ProtectedRoute>
