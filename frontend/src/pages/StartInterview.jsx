@@ -211,7 +211,7 @@ const StartInterview = () => {
         duration,
       });
       toast.success(`Interview complete! Score: ${res.data.score}/10`);
-      navigate(`/history/${session.sessionId}`);
+      navigate(`/dashboard/session/${session.sessionId}`);
     } catch (err) {
       toast.error(err.message || 'Submission failed');
     } finally {

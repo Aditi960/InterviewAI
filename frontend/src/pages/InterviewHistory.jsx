@@ -28,13 +28,22 @@ const ScoreRing = ({ score }) => {
 };
 
 // Session Detail view
-const SessionDetail = ({ id }) => {
+const SessionDetail = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const { darkMode } = useTheme();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('SessionDetail route id:', id);
+    if (!id) {
+      console.log('SessionDetail: missing id, skipping API call');
+      setLoading(false);
+      return;
+    }
+
+    console.log('SessionDetail fetching API with id:', id);
     api.get(`/api/interviews/${id}`)
       .then(res => setSession(res.data))
       .catch(() => toast.error('Failed to load session'))
@@ -175,7 +184,7 @@ const HistoryList = () => {
       ) : (
         <div className="flex flex-col gap-2 sm:gap-3">
           {sessions.map(s => (
-            <div key={s._id} onClick={() => navigate(`/history/${s._id}`)}
+            <div key={s._id} onClick={() => navigate(`/dashboard/session/${s._id}`)}
               className="flex items-center gap-3 sm:gap-4 p-3.5 sm:p-[20px_24px]"
               style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', cursor: 'pointer', transition: 'box-shadow 0.15s' }}
               onMouseEnter={e => e.currentTarget.style.boxShadow = darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.1)'}
@@ -216,7 +225,7 @@ const HistoryList = () => {
 
 const InterviewHistory = () => {
   const { id } = useParams();
-  return id ? <SessionDetail id={id} /> : <HistoryList />;
+  return id ? <SessionDetail /> : <HistoryList />;
 };
 
 export default InterviewHistory;

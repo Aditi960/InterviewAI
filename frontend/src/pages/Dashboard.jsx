@@ -167,7 +167,7 @@ const Dashboard = () => {
                 <div className="text-base font-bold" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>{session.score}/10</div>
               </div>
               <button
-                onClick={() => navigate(`/history/${session._id}`)}
+                onClick={() => navigate(`/dashboard/session/${session._id}`)}
                 className="min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
                 style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               >
@@ -219,7 +219,7 @@ const Dashboard = () => {
                   </td>
                   <td style={{ padding: '14px 8px' }}>
                     <button
-                      onClick={() => navigate(`/history/${session._id}`)}
+                      onClick={() => navigate(`/dashboard/session/${session._id}`)}
                       className="min-h-[44px]"
                       style={{ background: darkMode ? '#1e293b' : 'white', border: `1px solid ${darkMode ? '#334155' : '#e2e8f0'}`, borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: 'pointer', fontWeight: 500, color: darkMode ? '#94a3b8' : '#475569', whiteSpace: 'nowrap' }}
                     >
