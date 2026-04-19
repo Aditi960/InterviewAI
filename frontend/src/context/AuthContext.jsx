@@ -20,9 +20,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const parsedUser = JSON.parse(storedUser);
         const normalizedUser = normalizeUser(parsedUser);
-        if (!parsedUser?._id && parsedUser?.id) {
-          localStorage.setItem('user', JSON.stringify(normalizedUser));
-        }
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
         setUser(normalizedUser);
       } catch {
         localStorage.removeItem('token');
