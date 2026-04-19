@@ -2,7 +2,7 @@ const OpenAI = require('openai');
 const multer = require('multer');
 const fs = require('fs');
 const mammoth = require('mammoth');
-const pdfParse = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 const InterviewSession = require('../models/InterviewSession');
 const User = require('../models/User');
 
@@ -75,8 +75,13 @@ const extractResumeText = async (file) => {
   }
 
   if (file.mimetype === 'application/pdf') {
-    const result = await pdfParse(file.buffer);
-    return result?.text?.trim() || '';
+    const parser = new PDFParse({ data: file.buffer });
+    try {
+      const result = await parser.getText();
+      return result?.text?.trim() || '';
+    } finally {
+      await parser.destroy();
+    }
   }
 
   if (
