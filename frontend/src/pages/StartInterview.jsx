@@ -13,6 +13,7 @@ const DIFFICULTIES = [
   { key: 'MEDIUM', label: 'Medium', desc: 'Intermediate, practical mix', color: '#eab308' },
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
+const STEPS = { SETUP: 1, INTERVIEW: 2 };
 const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
 const QUESTION_TYPE_SEQUENCE = ['HR', 'HR', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'TECHNICAL', 'TECHNICAL', 'TECHNICAL'];
 const KNOWN_QUESTION_TYPES = new Set(['HR', 'PROJECT', 'TECHNICAL']);
@@ -44,7 +45,7 @@ const normalizeQuestionItem = (item, index) => {
 const StartInterview = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(STEPS.SETUP);
   const [role, setRole] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
@@ -78,7 +79,7 @@ const StartInterview = () => {
   });
 
   useEffect(() => {
-    if (step === 3) {
+    if (step === STEPS.INTERVIEW) {
       startTimeRef.current = Date.now();
       timerRef.current = setInterval(() => setTimer(t => t + 1), 1000);
     }
@@ -144,7 +145,7 @@ const StartInterview = () => {
   }, [currentQ]);
 
   useEffect(() => {
-    if (step !== 3 || !session?.questions?.length) return;
+    if (step !== STEPS.INTERVIEW || !session?.questions?.length) return;
     void speakQuestion(currentQ);
   }, [step, currentQ, session, speakQuestion]);
 
@@ -181,7 +182,7 @@ const StartInterview = () => {
       setCurrentQ(0);
       setCurrentAnswer('');
       setTimer(0);
-      setStep(3);
+      setStep(STEPS.INTERVIEW);
     } catch (err) {
       toast.error(err.message || 'Failed to start interview');
     } finally {
@@ -253,7 +254,7 @@ const StartInterview = () => {
   };
 
   useEffect(() => {
-    if (step !== 3) return;
+    if (step !== STEPS.INTERVIEW) return;
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = '';
@@ -264,7 +265,7 @@ const StartInterview = () => {
 
   // ─── Step 1: Setup ─────────────────────────────────────────────────────────
 
-  if (step === 1) return (
+  if (step === STEPS.SETUP) return (
     <div className="max-w-[720px] mx-auto">
       <h1 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
         Start New Interview
@@ -384,7 +385,7 @@ const StartInterview = () => {
 
   // ─── Step 2: Interview ─────────────────────────────────────────────────────
 
-  if (step === 3 && session) {
+  if (step === STEPS.INTERVIEW && session) {
     const questions = session.questions;
     const answeredCount = answers.filter((a) => a.trim()).length;
     const maxUnlockedQuestion = Math.min(questions.length - 1, answeredCount);
