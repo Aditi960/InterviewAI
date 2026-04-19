@@ -12,7 +12,20 @@ const openai = new OpenAI({
 });
 
 const MAX_RESUME_TEXT_CHARS = 12000;
-const QUESTIONS_PER_CATEGORY = 5;
+const QUESTION_TYPE_ORDER = [
+  'HR',
+  'HR',
+  'PROJECT',
+  'PROJECT',
+  'PROJECT',
+  'PROJECT',
+  'PROJECT',
+  'TECHNICAL',
+  'TECHNICAL',
+  'TECHNICAL',
+];
+const QUESTION_TYPE_COUNTS = { HR: 2, PROJECT: 5, TECHNICAL: 3 };
+const TOTAL_QUESTION_COUNT = QUESTION_TYPE_ORDER.length;
 
 const ROLE_TOPICS = {
   'Frontend Developer': ['React', 'JavaScript', 'CSS', 'HTML', 'Performance'],
@@ -43,30 +56,65 @@ Create interview questions for a ${role} role at ${difficulty} difficulty.
 Use this resume content:
 """${resumeText.slice(0, MAX_RESUME_TEXT_CHARS)}"""
 
-Return ONLY valid JSON in this exact shape:
-{
-  "hrQuestions": ["...", "...", "...", "...", "..."],
-  "technicalQuestions": ["...", "...", "...", "...", "..."]
-}
+Generate exactly 10 interview questions in this JSON format:
+[
+  { "type": "HR", "question": "..." },
+  { "type": "HR", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "TECHNICAL", "question": "..." },
+  { "type": "TECHNICAL", "question": "..." },
+  { "type": "TECHNICAL", "question": "..." }
+]
+Return ONLY the JSON array. No explanations.
 
-Rules:
-- Exactly ${QUESTIONS_PER_CATEGORY} hrQuestions and exactly ${QUESTIONS_PER_CATEGORY} technicalQuestions.
-- All questions must be unique.
-- HR questions should assess communication, teamwork, ownership, conflict handling, and motivation.
-- Technical questions must be directly based on listed skills, projects, tools, or achievements in the resume.
-- No markdown, no explanation, no numbering.
+Category requirements:
+- 2 HR questions (motivation, goals, project choice)
+- 5 PROJECT questions (system flow, auth logic, API flow, challenges faced, scalability)
+- 3 TECHNICAL questions (REST APIs, Express middleware, MongoDB queries)
+- Questions must be unique and grounded in the provided resume.
 `;
 
-const validateQuestionGroup = (group, name) => {
-  if (!Array.isArray(group) || group.length !== QUESTIONS_PER_CATEGORY) {
-    throw new Error(`${name} must contain exactly ${QUESTIONS_PER_CATEGORY} questions`);
+const validateTypedQuestions = (questions) => {
+  if (!Array.isArray(questions) || questions.length !== TOTAL_QUESTION_COUNT) {
+    throw new Error(`Groq response must be a JSON array of exactly ${TOTAL_QUESTION_COUNT} questions`);
   }
-  const normalized = group.map((q) => (typeof q === 'string' ? q.trim() : ''));
-  const unique = new Set(normalized.map((q) => q.toLowerCase()));
-  if (normalized.some((q) => !q) || unique.size !== QUESTIONS_PER_CATEGORY) {
-    throw new Error(`${name} must contain ${QUESTIONS_PER_CATEGORY} unique non-empty strings`);
+
+  const normalizedQuestions = questions.map((q, index) => {
+    const type = typeof q?.type === 'string' ? q.type.trim().toUpperCase() : '';
+    const question = typeof q?.question === 'string' ? q.question.trim() : '';
+    if (!type || !question) {
+      throw new Error(`Question ${index + 1} must include non-empty "type" and "question"`);
+    }
+    return { type, question };
+  });
+
+  const uniqueQuestions = new Set(normalizedQuestions.map((q) => q.question.toLowerCase()));
+  if (uniqueQuestions.size !== TOTAL_QUESTION_COUNT) {
+    throw new Error(`Questions must contain exactly ${TOTAL_QUESTION_COUNT} unique values`);
   }
-  return normalized;
+
+  const typeCounts = normalizedQuestions.reduce((acc, q) => {
+    acc[q.type] = (acc[q.type] || 0) + 1;
+    return acc;
+  }, {});
+
+  const hasValidDistribution = Object.entries(QUESTION_TYPE_COUNTS)
+    .every(([type, count]) => (typeCounts[type] || 0) === count);
+
+  if (!hasValidDistribution) {
+    throw new Error('Questions must contain exactly 2 HR, 5 PROJECT, and 3 TECHNICAL questions');
+  }
+
+  const hasValidOrder = normalizedQuestions.every((q, index) => q.type === QUESTION_TYPE_ORDER[index]);
+  if (!hasValidOrder) {
+    throw new Error('Questions must follow the required category order: HR, HR, PROJECT x5, TECHNICAL x3');
+  }
+
+  return normalizedQuestions;
 };
 
 const extractResumeText = async (file) => {
@@ -171,23 +219,44 @@ const uploadResume = async (req, res, next) => {
       return res.status(502).json({ error: 'Failed to parse Groq questions response' });
     }
 
-    let hrQuestions;
-    let technicalQuestions;
+    let typedQuestions;
     try {
-      hrQuestions = validateQuestionGroup(parsed.hrQuestions, 'hrQuestions');
-      technicalQuestions = validateQuestionGroup(parsed.technicalQuestions, 'technicalQuestions');
+      typedQuestions = validateTypedQuestions(parsed);
     } catch (validationErr) {
       return res.status(502).json({ error: validationErr.message });
     }
 
-    const questions = [...hrQuestions, ...technicalQuestions];
+    const groupedQuestions = {
+      HR: [],
+      PROJECT: [],
+      TECHNICAL: [],
+      hrQuestions: [],
+      projectQuestions: [],
+      technicalQuestions: [],
+    };
+    typedQuestions.forEach(({ type, question }) => {
+      if (type === 'HR') {
+        groupedQuestions.HR.push(question);
+        groupedQuestions.hrQuestions.push(question);
+      }
+      if (type === 'PROJECT') {
+        groupedQuestions.PROJECT.push(question);
+        groupedQuestions.projectQuestions.push(question);
+      }
+      if (type === 'TECHNICAL') {
+        groupedQuestions.TECHNICAL.push(question);
+        groupedQuestions.technicalQuestions.push(question);
+      }
+    });
+
     const session = await InterviewSession.create({
       userId,
       role,
       difficulty,
       resumeUrl: req.file.originalname || '',
       status: 'in-progress',
-      questions: questions.map((question) => ({
+      questions: typedQuestions.map(({ type, question }) => ({
+        type,
         question,
         answer: '',
         evaluation: '',
@@ -197,9 +266,8 @@ const uploadResume = async (req, res, next) => {
 
     return res.status(201).json({
       sessionId: session._id,
-      hrQuestions,
-      technicalQuestions,
-      questions,
+      ...groupedQuestions,
+      questions: typedQuestions,
     });
   } catch (err) {
     if (err?.status) {
@@ -221,7 +289,28 @@ const startInterview = async (req, res, next) => {
       return res.status(400).json({ error: 'Role and difficulty are required' });
     }
 
-    const systemPrompt = `Generate exactly 10 unique technical interview questions for a ${role} developer at ${difficulty} difficulty. Return only a JSON array of 10 question strings. No explanations, no numbering, just the array. Make these questions different from typical common questions. Be creative and specific.`;
+    const systemPrompt = `
+Generate exactly 10 interview questions in this JSON format:
+[
+  { "type": "HR", "question": "..." },
+  { "type": "HR", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "PROJECT", "question": "..." },
+  { "type": "TECHNICAL", "question": "..." },
+  { "type": "TECHNICAL", "question": "..." },
+  { "type": "TECHNICAL", "question": "..." }
+]
+Return ONLY the JSON array. No explanations.
+
+Create questions for a ${role} interview at ${difficulty} difficulty.
+Category requirements:
+- 2 HR questions (motivation, goals, project choice)
+- 5 PROJECT questions (system flow, auth logic, API flow, challenges faced, scalability)
+- 3 TECHNICAL questions (REST APIs, Express middleware, MongoDB queries)
+`;
 
     let raw = '';
     try {
@@ -247,17 +336,11 @@ const startInterview = async (req, res, next) => {
       return res.status(502).json({ error: 'Failed to parse Groq questions response as JSON array' });
     }
 
-    const normalizedQuestions = Array.isArray(questions)
-      ? questions.map((q) => (typeof q === 'string' ? q.trim() : ''))
-      : [];
-    const uniqueQuestions = new Set(normalizedQuestions.map((q) => q.toLowerCase()));
-
-    if (
-      normalizedQuestions.length !== 10
-      || normalizedQuestions.some((q) => !q)
-      || uniqueQuestions.size !== 10
-    ) {
-      return res.status(502).json({ error: 'Groq response must be a JSON array of 10 unique question strings' });
+    let normalizedQuestions;
+    try {
+      normalizedQuestions = validateTypedQuestions(questions);
+    } catch (validationErr) {
+      return res.status(502).json({ error: validationErr.message });
     }
 
     const session = await InterviewSession.create({
@@ -265,7 +348,8 @@ const startInterview = async (req, res, next) => {
       role,
       difficulty,
       status: 'in-progress',
-      questions: normalizedQuestions.map((question) => ({
+      questions: normalizedQuestions.map(({ type, question }) => ({
+        type,
         question,
         answer: '',
         evaluation: '',
