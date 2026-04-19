@@ -1,5 +1,6 @@
 const express = require('express');
 const multer = require('multer');
+console.log('multer loaded:', typeof multer);
 const router = express.Router();
 const authMiddleware = require('../middleware/authMiddleware');
 const {
