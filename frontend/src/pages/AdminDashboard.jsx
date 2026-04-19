@@ -63,6 +63,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handlePromote = async (user) => {
+    const confirmed = window.confirm(`Are you sure you want to grant admin access to ${user.name}?`);
+    if (!confirmed) return;
+    try {
+      await api.post('/api/admin/promote', { userId: user._id });
+      setUsers(prevUsers => prevUsers.map(u => (
+        u._id === user._id ? { ...u, role: 'admin' } : u
+      )));
+      toast.success('User promoted to admin successfully');
+    } catch (error) {
+      toast.error(error.message || 'Failed to promote user');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
@@ -162,18 +176,49 @@ const AdminDashboard = () => {
                       </span>
                     </td>
                     <td style={{ padding: '14px 8px' }}>
-                      <button
-                        onClick={() => handleDelete(user._id)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 6,
-                          background: '#fef2f2', border: '1px solid #fecaca',
-                          borderRadius: 8, padding: '6px 14px', fontSize: 13,
-                          cursor: 'pointer', fontWeight: 500, color: '#ef4444',
-                          fontFamily: 'inherit',
-                        }}
-                      >
-                        <Trash2 size={14} /> Delete
-                      </button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        {user.role !== 'admin' ? (
+                          <button
+                            onClick={() => handlePromote(user)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 6,
+                              background: darkMode ? '#083344' : '#ecfeff', border: '1px solid #67e8f9',
+                              borderRadius: 8, padding: '6px 14px', fontSize: 13,
+                              cursor: 'pointer', fontWeight: 600, color: '#0891b2',
+                              fontFamily: 'inherit',
+                            }}
+                          >
+                            Make Admin
+                          </button>
+                        ) : (
+                          <span
+                            style={{
+                              background: darkMode ? '#1e3a8a' : '#dbeafe',
+                              border: '1px solid #93c5fd',
+                              color: darkMode ? '#bfdbfe' : '#1d4ed8',
+                              borderRadius: 999,
+                              padding: '4px 10px',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            Admin
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleDelete(user._id)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            background: '#fef2f2', border: '1px solid #fecaca',
+                            borderRadius: 8, padding: '6px 14px', fontSize: 13,
+                            cursor: 'pointer', fontWeight: 500, color: '#ef4444',
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

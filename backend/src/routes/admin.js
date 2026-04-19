@@ -13,6 +13,23 @@ router.get('/users', async (req, res) => {
   }
 });
 
+// POST /api/admin/promote — promote user role to admin
+router.post('/promote', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId required' });
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role: 'admin' },
+      { new: true }
+    ).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({ message: 'User promoted to admin', user });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // DELETE /api/admin/users/:id — delete user and all their interview sessions
 router.delete('/users/:id', async (req, res) => {
   try {
