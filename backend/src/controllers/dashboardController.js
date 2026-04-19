@@ -2,7 +2,7 @@ const InterviewSession = require('../models/InterviewSession');
 
 const getStats = async (req, res, next) => {
   try {
-    const userId = req.user?._id || req.user?.id;
+    const userId = req.user?.id || req.user?._id?.toString();
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized user context' });
     }
