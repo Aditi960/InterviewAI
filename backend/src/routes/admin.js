@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const InterviewSession = require('../models/InterviewSession');
 
@@ -18,6 +19,9 @@ router.post('/promote', async (req, res) => {
   try {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: 'userId required' });
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid userId' });
+    }
     const user = await User.findByIdAndUpdate(
       userId,
       { role: 'admin' },
