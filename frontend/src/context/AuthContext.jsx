@@ -3,6 +3,13 @@ import api from '../lib/api';
 
 const AuthContext = createContext(null);
 
+const normalizeUser = (userData) => {
+  if (!userData) return null;
+  const _id = userData._id || userData.id;
+  if (!_id) return { ...userData };
+  return { ...userData, _id };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,7 +19,10 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem('user');
     if (token && storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        const normalizedUser = normalizeUser(parsedUser);
+        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        setUser(normalizedUser);
       } catch {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -23,17 +33,19 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     const { data } = await api.post('/api/auth/login', { email, password });
+    const normalizedUser = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    setUser(data.user);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
+    setUser(normalizedUser);
     return data;
   };
 
   const signUp = async (email, password, name) => {
     const { data } = await api.post('/api/auth/register', { email, password, name });
+    const normalizedUser = normalizeUser(data.user);
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    setUser(data.user);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
+    setUser(normalizedUser);
     return data;
   };
 
