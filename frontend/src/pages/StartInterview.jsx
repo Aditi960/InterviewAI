@@ -13,9 +13,12 @@ const DIFFICULTIES = [
   { key: 'MEDIUM', label: 'Medium', desc: 'Intermediate, practical mix', color: '#eab308' },
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
+// Keep INTERVIEW as 3 to preserve compatibility with existing analytics/state references.
+const STEPS = { SETUP: 1, INTERVIEW: 3 };
 const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
-const QUESTION_TYPE_ORDER = ['HR', 'PROJECT', 'TECHNICAL'];
 const QUESTION_TYPE_SEQUENCE = ['HR', 'HR', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'TECHNICAL', 'TECHNICAL', 'TECHNICAL'];
+const KNOWN_QUESTION_TYPES = new Set(['HR', 'PROJECT', 'TECHNICAL']);
+const REQUIRED_QUESTION_COUNT = QUESTION_TYPE_SEQUENCE.length;
 
 const getQuestionTypeStyles = (type) => {
   switch (type) {
@@ -30,14 +33,15 @@ const getQuestionTypeStyles = (type) => {
 };
 
 const normalizeQuestionItem = (item, index) => {
+  const fallbackType = QUESTION_TYPE_SEQUENCE[index];
+  if (!fallbackType) {
+    throw new Error('Received more questions than expected');
+  }
   if (typeof item === 'string') {
-    const fallbackType = QUESTION_TYPE_SEQUENCE[index];
-    if (!fallbackType) {
-      throw new Error('Received unexpected question format from server');
-    }
     return { type: fallbackType, question: item.trim() };
   }
-  const type = typeof item?.type === 'string' ? item.type.trim().toUpperCase() : 'TECHNICAL';
+  const rawType = typeof item?.type === 'string' ? item.type.trim().toUpperCase() : '';
+  const type = KNOWN_QUESTION_TYPES.has(rawType) ? rawType : fallbackType;
   const question = typeof item?.question === 'string' ? item.question.trim() : '';
   return { type, question };
 };
@@ -45,13 +49,12 @@ const normalizeQuestionItem = (item, index) => {
 const StartInterview = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(STEPS.SETUP);
   const [role, setRole] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
-  const [generatedQuestions, setGeneratedQuestions] = useState({ HR: [], PROJECT: [], TECHNICAL: [] });
   const [answers, setAnswers] = useState([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -80,7 +83,7 @@ const StartInterview = () => {
   });
 
   useEffect(() => {
-    if (step === 3) {
+    if (step === STEPS.INTERVIEW) {
       startTimeRef.current = Date.now();
       timerRef.current = setInterval(() => setTimer(t => t + 1), 1000);
     }
@@ -146,7 +149,7 @@ const StartInterview = () => {
   }, [currentQ]);
 
   useEffect(() => {
-    if (step !== 3 || !session?.questions?.length) return;
+    if (step !== STEPS.INTERVIEW || !session?.questions?.length) return;
     void speakQuestion(currentQ);
   }, [step, currentQ, session, speakQuestion]);
 
@@ -173,35 +176,22 @@ const StartInterview = () => {
         ? res.data.questions.map((item, index) => normalizeQuestionItem(item, index)).filter((q) => q.question)
         : [];
 
-      const groupedQuestions = normalizedQuestions.reduce(
-        (acc, q) => {
-          if (!acc[q.type]) acc[q.type] = [];
-          acc[q.type].push(q.question);
-          return acc;
-        },
-        { HR: [], PROJECT: [], TECHNICAL: [] }
-      );
-
-      if (!normalizedQuestions.length) {
-        throw new Error('No valid questions were generated');
+      const interviewQuestions = normalizedQuestions.slice(0, REQUIRED_QUESTION_COUNT);
+      if (interviewQuestions.length !== REQUIRED_QUESTION_COUNT) {
+        throw new Error(`Could not generate ${REQUIRED_QUESTION_COUNT} interview questions (received ${normalizedQuestions.length}). Please try again.`);
       }
 
-      setSession({ sessionId: res.data.sessionId, questions: normalizedQuestions });
-      setGeneratedQuestions(groupedQuestions);
-      setAnswers(new Array(normalizedQuestions.length).fill(''));
+      setSession({ sessionId: res.data.sessionId, questions: interviewQuestions });
+      setAnswers(new Array(REQUIRED_QUESTION_COUNT).fill(''));
       setCurrentQ(0);
       setCurrentAnswer('');
       setTimer(0);
-      setStep(2);
+      setStep(STEPS.INTERVIEW);
     } catch (err) {
       toast.error(err.message || 'Failed to start interview');
     } finally {
       setLoading(false);
     }
-  };
-
-  const beginInterview = () => {
-    setStep(3);
   };
 
   const handleAnswerSubmit = async () => {
@@ -268,7 +258,7 @@ const StartInterview = () => {
   };
 
   useEffect(() => {
-    if (step !== 3) return;
+    if (step !== STEPS.INTERVIEW) return;
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = '';
@@ -279,7 +269,7 @@ const StartInterview = () => {
 
   // ─── Step 1: Setup ─────────────────────────────────────────────────────────
 
-  if (step === 1) return (
+  if (step === STEPS.SETUP) return (
     <div className="max-w-[720px] mx-auto">
       <h1 className="text-xl sm:text-2xl font-bold mb-1" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
         Start New Interview
@@ -397,68 +387,9 @@ const StartInterview = () => {
     </div>
   );
 
-  // ─── Step 2: Question Preview ──────────────────────────────────────────────
+  // ─── Interview ─────────────────────────────────────────────────────────────
 
-  if (step === 2 && session) {
-    return (
-      <div className="max-w-[760px] mx-auto">
-        <h2 className="text-lg sm:text-[22px] font-bold mb-2" style={{ fontFamily: 'Syne, sans-serif', color: darkMode ? '#f1f5f9' : '#1e293b' }}>
-          Review Generated Questions
-        </h2>
-        <p className="text-xs sm:text-[13px] mb-5" style={{ color: '#94a3b8' }}>
-          We generated {generatedQuestions.HR.length} HR, {generatedQuestions.PROJECT.length} project deep-dive, and {generatedQuestions.TECHNICAL.length} technical questions from your resume.
-        </p>
-
-        {QUESTION_TYPE_ORDER.map((type) => (
-          <div
-            key={type}
-            className="p-4 sm:p-6 mb-4 last:mb-6"
-            style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-          >
-            <h3 className="text-sm sm:text-[15px] font-bold mb-3" style={{ fontFamily: 'Syne, sans-serif', color: '#06b6d4' }}>
-              {type === 'PROJECT' ? 'Project Deep-Dive Questions' : `${type} Questions`}
-            </h3>
-            <div className="space-y-2">
-              {generatedQuestions[type].map((q, i) => (
-                <div key={`${type}-${i}`} className="text-sm" style={{ color: darkMode ? '#e2e8f0' : '#334155' }}>
-                  {i + 1}. {q}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-          <button
-            onClick={() => setStep(1)}
-            className="min-h-[44px] flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-medium w-full sm:w-auto"
-            style={{
-              borderRadius: 12,
-              border: `1.5px solid ${darkMode ? '#334155' : '#e2e8f0'}`, background: darkMode ? '#0f172a' : 'white',
-              cursor: 'pointer', color: '#475569', fontFamily: 'inherit',
-            }}
-          >
-            <ChevronLeft size={16} /> Back
-          </button>
-          <button
-            onClick={beginInterview}
-            className="min-h-[44px] flex-1 flex items-center justify-center gap-1.5 px-4 sm:px-5 py-3 text-sm font-semibold"
-            style={{
-              borderRadius: 12, border: 'none',
-              background: '#06b6d4', color: 'white',
-              cursor: 'pointer', fontFamily: 'inherit',
-            }}
-          >
-            Start Interview <ChevronRight size={16} />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Step 3: Interview ─────────────────────────────────────────────────────
-
-  if (step === 3 && session) {
+  if (step === STEPS.INTERVIEW && session) {
     const questions = session.questions;
     const answeredCount = answers.filter((a) => a.trim()).length;
     const maxUnlockedQuestion = Math.min(questions.length - 1, answeredCount);
