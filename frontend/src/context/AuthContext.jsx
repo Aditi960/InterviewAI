@@ -6,7 +6,7 @@ const AuthContext = createContext(null);
 const normalizeUser = (userData) => {
   if (!userData) return userData;
   const _id = userData._id || userData.id;
-  return { ...userData, _id, id: userData.id || _id };
+  return { ...userData, _id };
 };
 
 export const AuthProvider = ({ children }) => {
@@ -18,10 +18,10 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem('user');
     if (token && storedUser) {
       try {
-        const normalizedUser = normalizeUser(JSON.parse(storedUser));
-        const normalizedUserString = JSON.stringify(normalizedUser);
-        if (normalizedUserString !== storedUser) {
-          localStorage.setItem('user', normalizedUserString);
+        const parsedUser = JSON.parse(storedUser);
+        const normalizedUser = normalizeUser(parsedUser);
+        if (!parsedUser?._id && parsedUser?.id) {
+          localStorage.setItem('user', JSON.stringify(normalizedUser));
         }
         setUser(normalizedUser);
       } catch {
