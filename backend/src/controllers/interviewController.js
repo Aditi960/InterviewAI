@@ -140,13 +140,15 @@ const transcribeAudio = (req, res, next) => {
 
 // POST /api/interviews/upload-resume
 const uploadResume = async (req, res, next) => {
-  try {
-    await runUpload(req, res, resumeUpload);
-  } catch (err) {
-    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'Resume file must be 2MB or smaller' });
+  if (!req.file) {
+    try {
+      await runUpload(req, res, resumeUpload);
+    } catch (err) {
+      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'Resume file must be 2MB or smaller' });
+      }
+      return res.status(400).json({ error: err.message || 'Resume upload failed' });
     }
-    return res.status(400).json({ error: err.message || 'Resume upload failed' });
   }
 
   try {
