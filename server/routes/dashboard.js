@@ -6,13 +6,17 @@ const router = express.Router();
 
 // GET /api/dashboard/stats - All dashboard data in one call
 router.get('/stats', authMiddleware, async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user?.id || req.user?._id?.toString();
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized user context' });
+  }
+  const userMatch = { userId, status: 'completed' };
 
   // Run all aggregations in parallel
   const [summaryStats, scoreHistory, topicPerformance, recentSessions] = await Promise.all([
     // Summary stats aggregation
     InterviewSession.aggregate([
-      { $match: { userId, status: 'completed' } },
+      { $match: userMatch },
       {
         $group: {
           _id: null,
@@ -24,7 +28,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
     ]),
 
     // Score history - last 30 sessions for trend line
-    InterviewSession.find({ userId, status: 'completed' })
+    InterviewSession.find(userMatch)
       .sort({ createdAt: -1 })
       .limit(30)
       .select('score createdAt role')
@@ -32,7 +36,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
 
     // Topic performance aggregation
     InterviewSession.aggregate([
-      { $match: { userId, status: 'completed' } },
+      { $match: userMatch },
       { $unwind: '$topicAnalysis' },
       {
         $group: {
@@ -45,7 +49,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
     ]),
 
     // Recent 5 sessions
-    InterviewSession.find({ userId, status: 'completed' })
+    InterviewSession.find(userMatch)
       .sort({ createdAt: -1 })
       .limit(5)
       .select('role difficulty score createdAt experienceLevel')
