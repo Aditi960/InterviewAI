@@ -19,7 +19,10 @@ export const AuthProvider = ({ children }) => {
     if (token && storedUser) {
       try {
         const normalizedUser = normalizeUser(JSON.parse(storedUser));
-        localStorage.setItem('user', JSON.stringify(normalizedUser));
+        const normalizedUserString = JSON.stringify(normalizedUser);
+        if (normalizedUserString !== storedUser) {
+          localStorage.setItem('user', normalizedUserString);
+        }
         setUser(normalizedUser);
       } catch {
         localStorage.removeItem('token');
