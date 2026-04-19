@@ -2,9 +2,16 @@ const InterviewSession = require('../models/InterviewSession');
 
 const getStats = async (req, res, next) => {
   try {
-    const totalInterviews = await InterviewSession.countDocuments({ userId: req.user._id });
+    const userId = req.user?.id || req.user?._id?.toString();
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized user context' });
+    }
+    const userMatch = { userId };
+    const completedUserMatch = { ...userMatch, status: 'completed' };
 
-    const sessions = await InterviewSession.find({ userId: req.user._id, status: 'completed' })
+    const totalInterviews = await InterviewSession.countDocuments(userMatch);
+
+    const sessions = await InterviewSession.find(completedUserMatch)
       .sort({ createdAt: -1 })
       .lean();
 
