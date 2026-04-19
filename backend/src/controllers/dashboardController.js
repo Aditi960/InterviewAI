@@ -2,15 +2,15 @@ const InterviewSession = require('../models/InterviewSession');
 
 const getStats = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const totalInterviews = await InterviewSession.countDocuments({ userId: req.user._id });
 
-    const sessions = await InterviewSession.find({ userId, status: 'completed' })
+    const sessions = await InterviewSession.find({ userId: req.user._id, status: 'completed' })
       .sort({ createdAt: -1 })
       .lean();
 
     if (!sessions.length) {
       return res.json({
-        totalInterviews: 0,
+        totalInterviews,
         averageScore: 0,
         bestScore: 0,
         weakTopicsCount: 0,
@@ -21,7 +21,6 @@ const getStats = async (req, res, next) => {
     }
 
     // Stats calculations
-    const totalInterviews = sessions.length;
     const scores = sessions.map(s => s.score);
     const averageScore = parseFloat((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1));
     const bestScore = Math.max(...scores);
