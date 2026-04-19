@@ -15,6 +15,7 @@ const DIFFICULTIES = [
 ];
 const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
 const QUESTION_TYPE_ORDER = ['HR', 'PROJECT', 'TECHNICAL'];
+const QUESTION_TYPE_SEQUENCE = ['HR', 'HR', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'TECHNICAL', 'TECHNICAL', 'TECHNICAL'];
 
 const getQuestionTypeStyles = (type) => {
   switch (type) {
@@ -28,9 +29,13 @@ const getQuestionTypeStyles = (type) => {
   }
 };
 
-const normalizeQuestionItem = (item) => {
+const normalizeQuestionItem = (item, index) => {
   if (typeof item === 'string') {
-    return { type: 'TECHNICAL', question: item.trim() };
+    const fallbackType = QUESTION_TYPE_SEQUENCE[index];
+    if (!fallbackType) {
+      throw new Error('Received unexpected question format from server');
+    }
+    return { type: fallbackType, question: item.trim() };
   }
   const type = typeof item?.type === 'string' ? item.type.trim().toUpperCase() : 'TECHNICAL';
   const question = typeof item?.question === 'string' ? item.question.trim() : '';
@@ -165,7 +170,7 @@ const StartInterview = () => {
       });
 
       const normalizedQuestions = Array.isArray(res.data.questions)
-        ? res.data.questions.map(normalizeQuestionItem).filter((q) => q.question)
+        ? res.data.questions.map((item, index) => normalizeQuestionItem(item, index)).filter((q) => q.question)
         : [];
 
       const groupedQuestions = normalizedQuestions.reduce(
@@ -220,8 +225,10 @@ const StartInterview = () => {
   };
 
   const goToQuestion = (index) => {
+    const totalQuestions = session?.questions?.length ?? 0;
+    if (!totalQuestions) return;
     const answeredCount = answers.filter((a) => a.trim()).length;
-    const maxUnlockedQuestion = Math.min((session?.questions?.length || 1) - 1, answeredCount);
+    const maxUnlockedQuestion = Math.min(totalQuestions - 1, answeredCount);
     if (index > maxUnlockedQuestion) return;
 
     stopRecording();

@@ -226,10 +226,28 @@ const uploadResume = async (req, res, next) => {
       return res.status(502).json({ error: validationErr.message });
     }
 
-    const groupedQuestions = typedQuestions.reduce((acc, q) => {
-      acc[`${q.type.toLowerCase()}Questions`].push(q.question);
-      return acc;
-    }, { hrQuestions: [], projectQuestions: [], technicalQuestions: [] });
+    const groupedQuestions = {
+      HR: [],
+      PROJECT: [],
+      TECHNICAL: [],
+      hrQuestions: [],
+      projectQuestions: [],
+      technicalQuestions: [],
+    };
+    typedQuestions.forEach(({ type, question }) => {
+      if (type === 'HR') {
+        groupedQuestions.HR.push(question);
+        groupedQuestions.hrQuestions.push(question);
+      }
+      if (type === 'PROJECT') {
+        groupedQuestions.PROJECT.push(question);
+        groupedQuestions.projectQuestions.push(question);
+      }
+      if (type === 'TECHNICAL') {
+        groupedQuestions.TECHNICAL.push(question);
+        groupedQuestions.technicalQuestions.push(question);
+      }
+    });
 
     const session = await InterviewSession.create({
       userId,
