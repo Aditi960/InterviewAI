@@ -28,18 +28,20 @@ const DifficultyBadge = ({ d }) => {
   );
 };
 
+const DEFAULT_STATS = {
+  totalInterviews: 0,
+  averageScore: 0,
+  bestScore: 0,
+  weakTopicsCount: 0,
+  scoreHistory: [],
+  topicPerformance: [],
+  recentSessions: []
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
-  const [stats, setStats] = useState({
-    totalInterviews: 0,
-    averageScore: 0,
-    bestScore: 0,
-    weakTopicsCount: 0,
-    scoreHistory: [],
-    topicPerformance: [],
-    recentSessions: []
-  });
+  const [stats, setStats] = useState(DEFAULT_STATS);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('Last 30 Days');
 
@@ -47,7 +49,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         const res = await api.get('/api/dashboard/stats');
-        setStats(res.data.stats);
+        setStats(res?.data?.stats || DEFAULT_STATS);
       } catch {
         toast.error('Failed to load dashboard');
       } finally {
