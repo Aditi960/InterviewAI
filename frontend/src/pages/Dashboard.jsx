@@ -5,7 +5,6 @@ import api from '../lib/api';
 import toast from 'react-hot-toast';
 import { TrendingUp, Award, Target, AlertTriangle, Calendar, ChevronRight } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
 
 const StatCard = ({ label, value, sub, color, icon: Icon, darkMode }) => (
   <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-[20px_24px] min-w-0" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
@@ -32,20 +31,31 @@ const DifficultyBadge = ({ d }) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
-  const { user } = useAuth();
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({
+    totalInterviews: 0,
+    averageScore: 0,
+    bestScore: 0,
+    weakTopicsCount: 0,
+    scoreHistory: [],
+    topicPerformance: [],
+    recentSessions: []
+  });
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('Last 30 Days');
 
   useEffect(() => {
-    api.get('/api/dashboard/stats')
-      .then(response => {
-        console.log('API response:', response.data);
-        console.log('userId from token:', user?._id);
-        setStats(response.data);
-      })
-      .catch(() => toast.error('Failed to load dashboard'))
-      .finally(() => setLoading(false));
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/api/dashboard/stats');
+        setStats(res.data.stats);
+      } catch {
+        toast.error('Failed to load dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
   }, []);
 
   if (loading) {
