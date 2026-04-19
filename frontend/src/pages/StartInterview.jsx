@@ -13,7 +13,7 @@ const DIFFICULTIES = [
   { key: 'MEDIUM', label: 'Medium', desc: 'Intermediate, practical mix', color: '#eab308' },
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
-// Keep INTERVIEW as 3 to preserve compatibility with existing persisted step values.
+// Keep INTERVIEW as 3 to preserve compatibility with existing analytics/state references.
 const STEPS = { SETUP: 1, INTERVIEW: 3 };
 const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
 const QUESTION_TYPE_SEQUENCE = ['HR', 'HR', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'TECHNICAL', 'TECHNICAL', 'TECHNICAL'];
@@ -33,7 +33,10 @@ const getQuestionTypeStyles = (type) => {
 };
 
 const normalizeQuestionItem = (item, index) => {
-  const fallbackType = QUESTION_TYPE_SEQUENCE[index] || 'TECHNICAL';
+  const fallbackType = QUESTION_TYPE_SEQUENCE[index];
+  if (!fallbackType) {
+    throw new Error('Received more questions than expected');
+  }
   if (typeof item === 'string') {
     return { type: fallbackType, question: item.trim() };
   }
@@ -175,7 +178,7 @@ const StartInterview = () => {
 
       const interviewQuestions = normalizedQuestions.slice(0, REQUIRED_QUESTION_COUNT);
       if (interviewQuestions.length !== REQUIRED_QUESTION_COUNT) {
-        throw new Error(`Could not generate ${REQUIRED_QUESTION_COUNT} interview questions. Please try again.`);
+        throw new Error(`Could not generate ${REQUIRED_QUESTION_COUNT} interview questions (received ${normalizedQuestions.length}). Please try again.`);
       }
 
       setSession({ sessionId: res.data.sessionId, questions: interviewQuestions });
