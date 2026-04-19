@@ -14,6 +14,28 @@ const DIFFICULTIES = [
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
 const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
+const QUESTION_TYPE_ORDER = ['HR', 'PROJECT', 'TECHNICAL'];
+
+const getQuestionTypeStyles = (type) => {
+  switch (type) {
+    case 'HR':
+      return { background: '#ede9fe', color: '#7c3aed' };
+    case 'PROJECT':
+      return { background: '#e0f2fe', color: '#0369a1' };
+    case 'TECHNICAL':
+    default:
+      return { background: '#dcfce7', color: '#15803d' };
+  }
+};
+
+const normalizeQuestionItem = (item) => {
+  if (typeof item === 'string') {
+    return { type: 'TECHNICAL', question: item.trim() };
+  }
+  const type = typeof item?.type === 'string' ? item.type.trim().toUpperCase() : 'TECHNICAL';
+  const question = typeof item?.question === 'string' ? item.question.trim() : '';
+  return { type, question };
+};
 
 const StartInterview = () => {
   const navigate = useNavigate();
@@ -24,7 +46,7 @@ const StartInterview = () => {
   const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState(null);
-  const [generatedQuestions, setGeneratedQuestions] = useState({ hrQuestions: [], technicalQuestions: [] });
+  const [generatedQuestions, setGeneratedQuestions] = useState({ HR: [], PROJECT: [], TECHNICAL: [] });
   const [answers, setAnswers] = useState([]);
   const [currentQ, setCurrentQ] = useState(0);
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -68,7 +90,8 @@ const StartInterview = () => {
 
   const speakQuestion = useCallback(async (questionIndex = currentQ) => {
     if (muted) return;
-    const question = session?.questions?.[questionIndex];
+    const questionEntry = session?.questions?.[questionIndex];
+    const question = typeof questionEntry === 'string' ? questionEntry : questionEntry?.question;
     if (!question) return;
 
     try {
@@ -141,12 +164,26 @@ const StartInterview = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      setSession({ sessionId: res.data.sessionId, questions: res.data.questions });
-      setGeneratedQuestions({
-        hrQuestions: res.data.hrQuestions || [],
-        technicalQuestions: res.data.technicalQuestions || [],
-      });
-      setAnswers(new Array(res.data.questions.length).fill(''));
+      const normalizedQuestions = Array.isArray(res.data.questions)
+        ? res.data.questions.map(normalizeQuestionItem).filter((q) => q.question)
+        : [];
+
+      const groupedQuestions = normalizedQuestions.reduce(
+        (acc, q) => {
+          if (!acc[q.type]) acc[q.type] = [];
+          acc[q.type].push(q.question);
+          return acc;
+        },
+        { HR: [], PROJECT: [], TECHNICAL: [] }
+      );
+
+      if (!normalizedQuestions.length) {
+        throw new Error('No valid questions were generated');
+      }
+
+      setSession({ sessionId: res.data.sessionId, questions: normalizedQuestions });
+      setGeneratedQuestions(groupedQuestions);
+      setAnswers(new Array(normalizedQuestions.length).fill(''));
       setCurrentQ(0);
       setCurrentAnswer('');
       setTimer(0);
@@ -183,6 +220,10 @@ const StartInterview = () => {
   };
 
   const goToQuestion = (index) => {
+    const answeredCount = answers.filter((a) => a.trim()).length;
+    const maxUnlockedQuestion = Math.min((session?.questions?.length || 1) - 1, answeredCount);
+    if (index > maxUnlockedQuestion) return;
+
     stopRecording();
     const newAnswers = [...answers];
     newAnswers[currentQ] = currentAnswer;
@@ -358,34 +399,27 @@ const StartInterview = () => {
           Review Generated Questions
         </h2>
         <p className="text-xs sm:text-[13px] mb-5" style={{ color: '#94a3b8' }}>
-          We generated {generatedQuestions.hrQuestions.length} HR and {generatedQuestions.technicalQuestions.length} technical questions from your resume.
+          We generated {generatedQuestions.HR.length} HR, {generatedQuestions.PROJECT.length} project deep-dive, and {generatedQuestions.TECHNICAL.length} technical questions from your resume.
         </p>
 
-        <div className="p-4 sm:p-6 mb-4" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h3 className="text-sm sm:text-[15px] font-bold mb-3" style={{ fontFamily: 'Syne, sans-serif', color: '#06b6d4' }}>
-            HR Questions
-          </h3>
-          <div className="space-y-2">
-            {generatedQuestions.hrQuestions.map((q, i) => (
-              <div key={`hr-${i}`} className="text-sm" style={{ color: darkMode ? '#e2e8f0' : '#334155' }}>
-                {i + 1}. {q}
-              </div>
-            ))}
+        {QUESTION_TYPE_ORDER.map((type) => (
+          <div
+            key={type}
+            className="p-4 sm:p-6 mb-4 last:mb-6"
+            style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          >
+            <h3 className="text-sm sm:text-[15px] font-bold mb-3" style={{ fontFamily: 'Syne, sans-serif', color: '#06b6d4' }}>
+              {type === 'PROJECT' ? 'Project Deep-Dive Questions' : `${type} Questions`}
+            </h3>
+            <div className="space-y-2">
+              {generatedQuestions[type].map((q, i) => (
+                <div key={`${type}-${i}`} className="text-sm" style={{ color: darkMode ? '#e2e8f0' : '#334155' }}>
+                  {i + 1}. {q}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-
-        <div className="p-4 sm:p-6 mb-6" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <h3 className="text-sm sm:text-[15px] font-bold mb-3" style={{ fontFamily: 'Syne, sans-serif', color: '#06b6d4' }}>
-            Technical Questions
-          </h3>
-          <div className="space-y-2">
-            {generatedQuestions.technicalQuestions.map((q, i) => (
-              <div key={`tech-${i}`} className="text-sm" style={{ color: darkMode ? '#e2e8f0' : '#334155' }}>
-                {i + 1}. {q}
-              </div>
-            ))}
-          </div>
-        </div>
+        ))}
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <button
@@ -419,7 +453,13 @@ const StartInterview = () => {
 
   if (step === 3 && session) {
     const questions = session.questions;
+    const answeredCount = answers.filter((a) => a.trim()).length;
+    const maxUnlockedQuestion = Math.min(questions.length - 1, answeredCount);
     const progress = ((currentQ + 1) / questions.length) * 100;
+    const currentQuestion = questions[currentQ];
+    const currentQuestionText = typeof currentQuestion === 'string' ? currentQuestion : currentQuestion?.question;
+    const currentQuestionType = typeof currentQuestion === 'string' ? 'TECHNICAL' : currentQuestion?.type || 'TECHNICAL';
+    const categoryStyles = getQuestionTypeStyles(currentQuestionType);
 
     return (
       <div className="max-w-[760px] mx-auto">
@@ -465,12 +505,17 @@ const StartInterview = () => {
 
         {/* Question */}
         <div className="p-4 sm:p-7 mb-4 sm:mb-5" style={{ background: darkMode ? '#1e293b' : 'white', borderRadius: 16, boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-          <div className="inline-flex items-center gap-1.5 mb-3 sm:mb-4 text-xs font-semibold tracking-wide" style={{ background: '#e0f7fa', color: '#0891b2', padding: '4px 12px', borderRadius: 100 }}>
-            Question {currentQ + 1}
+          <div className="inline-flex items-center gap-2 mb-3 sm:mb-4">
+            <div className="text-xs font-semibold tracking-wide" style={{ background: '#e0f7fa', color: '#0891b2', padding: '4px 12px', borderRadius: 100 }}>
+              Question {currentQ + 1}
+            </div>
+            <div className="text-xs font-semibold tracking-wide" style={{ ...categoryStyles, padding: '4px 12px', borderRadius: 100 }}>
+              {currentQuestionType}
+            </div>
           </div>
           <div className="flex items-start gap-2">
             <p className="text-base sm:text-lg font-semibold leading-relaxed m-0" style={{ color: darkMode ? '#f1f5f9' : '#1e293b' }}>
-              {questions[currentQ]}
+              {currentQuestionText}
             </p>
             <button
               onClick={() => void speakQuestion()}
@@ -600,20 +645,24 @@ const StartInterview = () => {
 
         {/* Question dot nav */}
         <div className="flex gap-1.5 justify-center mt-4 flex-wrap">
-          {questions.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goToQuestion(i)}
-              title={`Question ${i + 1}`}
-              className="min-h-[24px] min-w-[24px] flex items-center justify-center"
-              style={{
-                width: i === currentQ ? 24 : 8, height: 8, borderRadius: 4,
-                border: 'none',
-                background: i === currentQ ? '#06b6d4' : answers[i] ? '#06b6d466' : '#e2e8f0',
-                cursor: 'pointer', transition: 'all 0.2s', padding: 0,
-              }}
-            />
-          ))}
+          {questions.map((_, i) => {
+            const isUnlocked = i <= maxUnlockedQuestion;
+            return (
+              <button
+                key={i}
+                onClick={() => isUnlocked && goToQuestion(i)}
+                title={`Question ${i + 1}`}
+                disabled={!isUnlocked}
+                className="min-h-[24px] min-w-[24px] flex items-center justify-center"
+                style={{
+                  width: i === currentQ ? 24 : 8, height: 8, borderRadius: 4,
+                  border: 'none',
+                  background: i === currentQ ? '#06b6d4' : !isUnlocked ? '#e2e8f055' : answers[i] ? '#06b6d466' : '#e2e8f0',
+                  cursor: isUnlocked ? 'pointer' : 'not-allowed', transition: 'all 0.2s', padding: 0,
+                }}
+              />
+            );
+          })}
         </div>
 
         <div className="flex justify-center mt-4">

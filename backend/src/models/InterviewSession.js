@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
 
 const topicSchema = new mongoose.Schema({ name: String, score: Number, feedback: String }, { _id: false });
-const questionSchema = new mongoose.Schema({ question: String, answer: String, evaluation: String, score: Number }, { _id: false });
+const questionSchema = new mongoose.Schema({
+  type: { type: String, enum: ['HR', 'PROJECT', 'TECHNICAL'], default: 'TECHNICAL' },
+  question: String,
+  answer: String,
+  evaluation: String,
+  score: Number,
+}, { _id: false });
 
 const interviewSessionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
