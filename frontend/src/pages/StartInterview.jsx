@@ -13,7 +13,8 @@ const DIFFICULTIES = [
   { key: 'MEDIUM', label: 'Medium', desc: 'Intermediate, practical mix', color: '#eab308' },
   { key: 'HARD', label: 'Hard', desc: 'Senior level, system design', color: '#ef4444' },
 ];
-const STEPS = { SETUP: 1, INTERVIEW: 2 };
+// Keep INTERVIEW as 3 to preserve compatibility with existing persisted step values.
+const STEPS = { SETUP: 1, INTERVIEW: 3 };
 const MAX_RESUME_FILE_SIZE = 2 * 1024 * 1024;
 const QUESTION_TYPE_SEQUENCE = ['HR', 'HR', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'PROJECT', 'TECHNICAL', 'TECHNICAL', 'TECHNICAL'];
 const KNOWN_QUESTION_TYPES = new Set(['HR', 'PROJECT', 'TECHNICAL']);
@@ -174,7 +175,7 @@ const StartInterview = () => {
 
       const interviewQuestions = normalizedQuestions.slice(0, REQUIRED_QUESTION_COUNT);
       if (interviewQuestions.length !== REQUIRED_QUESTION_COUNT) {
-        throw new Error('Could not generate 10 interview questions. Please try again.');
+        throw new Error(`Could not generate ${REQUIRED_QUESTION_COUNT} interview questions. Please try again.`);
       }
 
       setSession({ sessionId: res.data.sessionId, questions: interviewQuestions });
@@ -383,7 +384,7 @@ const StartInterview = () => {
     </div>
   );
 
-  // ─── Step 2: Interview ─────────────────────────────────────────────────────
+  // ─── Interview ─────────────────────────────────────────────────────────────
 
   if (step === STEPS.INTERVIEW && session) {
     const questions = session.questions;
