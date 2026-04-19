@@ -64,7 +64,7 @@ const AdminDashboard = () => {
   };
 
   const handlePromote = async (user) => {
-    const confirmed = window.confirm(`Are you sure you want to grant admin access to ${user.name}?`);
+    const confirmed = window.confirm(`Grant admin access to ${user.name}?`);
     if (!confirmed) return;
     try {
       await api.post('/api/admin/promote', { userId: user._id });
@@ -193,9 +193,9 @@ const AdminDashboard = () => {
                         ) : (
                           <span
                             style={{
-                              background: darkMode ? '#1e3a8a' : '#dbeafe',
-                              border: '1px solid #93c5fd',
-                              color: darkMode ? '#bfdbfe' : '#1d4ed8',
+                              background: darkMode ? '#14532d' : '#dcfce7',
+                              border: '1px solid #86efac',
+                              color: darkMode ? '#bbf7d0' : '#166534',
                               borderRadius: 999,
                               padding: '4px 10px',
                               fontSize: 11,
