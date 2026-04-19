@@ -2,6 +2,7 @@ const OpenAI = require('openai');
 const multer = require('multer');
 const fs = require('fs');
 const mammoth = require('mammoth');
+const pdfParse = require('pdf-parse');
 const InterviewSession = require('../models/InterviewSession');
 const User = require('../models/User');
 
@@ -41,10 +42,11 @@ const resumeUpload = multer({
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
       'application/pdf',
+      'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
     if (allowedMimeTypes.includes(file.mimetype)) return cb(null, true);
-    return cb(new Error('Only PDF and DOCX files are allowed'));
+    return cb(new Error('Only PDF, DOC, and DOCX files are allowed'));
   },
 }).single('resume');
 
@@ -92,13 +94,14 @@ const extractResumeText = async (file) => {
   }
 
   if (file.mimetype === 'application/pdf') {
-    const pdfParseModule = await import('pdf-parse');
-    const pdfParse = pdfParseModule.default || pdfParseModule;
     const result = await pdfParse(file.buffer);
     return result?.text?.trim() || '';
   }
 
-  if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+  if (
+    file.mimetype === 'application/msword'
+    || file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ) {
     const result = await mammoth.extractRawText({ buffer: file.buffer });
     return result?.value?.trim() || '';
   }
@@ -155,7 +158,7 @@ const uploadResume = async (req, res, next) => {
     }
 
     if (!req.file) {
-      return res.status(400).json({ error: 'Resume file is required' });
+      return res.status(400).json({ error: 'No resume file uploaded' });
     }
 
     let resumeText = '';
