@@ -36,25 +36,6 @@ const upload = multer({
   limits: { fileSize: 25 * 1024 * 1024 },
 }).single('audio');
 
-const resumeUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedMimeTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    ];
-    if (allowedMimeTypes.includes(file.mimetype)) return cb(null, true);
-    return cb(new Error('Only PDF, DOC, and DOCX files are allowed'));
-  },
-}).single('resume');
-
-const runUpload = (req, res, uploadMiddleware) =>
-  new Promise((resolve, reject) => {
-    uploadMiddleware(req, res, (err) => (err ? reject(err) : resolve()));
-  });
-
 const buildResumeQuestionPrompt = ({ role, difficulty, resumeText }) => `
 You are an interview coach.
 Create interview questions for a ${role} role at ${difficulty} difficulty.
@@ -140,17 +121,6 @@ const transcribeAudio = (req, res, next) => {
 
 // POST /api/interviews/upload-resume
 const uploadResume = async (req, res, next) => {
-  if (!req.file) {
-    try {
-      await runUpload(req, res, resumeUpload);
-    } catch (err) {
-      if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ error: 'Resume file must be 2MB or smaller' });
-      }
-      return res.status(400).json({ error: err.message || 'Resume upload failed' });
-    }
-  }
-
   try {
     const { role, difficulty } = req.body;
     const userId = req.user._id;

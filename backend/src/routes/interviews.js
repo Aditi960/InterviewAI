@@ -25,10 +25,20 @@ const upload = multer({
   },
 });
 
+const uploadResumeMiddleware = (req, res, next) => {
+  upload.single('resume')(req, res, (err) => {
+    if (!err) return next();
+    if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'Resume file must be 2MB or smaller' });
+    }
+    return res.status(400).json({ error: err.message || 'Resume upload failed' });
+  });
+};
+
 router.use(authMiddleware);
 
 router.post('/start', startInterview);
-router.post('/upload-resume', upload.single('resume'), uploadResume);
+router.post('/upload-resume', uploadResumeMiddleware, uploadResume);
 router.post('/submit', submitInterview);
 router.post('/transcribe', transcribeAudio);  // must be before /:id
 router.get('/history', getHistory);
