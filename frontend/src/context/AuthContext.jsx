@@ -4,8 +4,9 @@ import api from '../lib/api';
 const AuthContext = createContext(null);
 
 const normalizeUser = (userData) => {
-  if (!userData) return userData;
+  if (!userData) return null;
   const _id = userData._id || userData.id;
+  if (!_id) return { ...userData };
   return { ...userData, _id };
 };
 
