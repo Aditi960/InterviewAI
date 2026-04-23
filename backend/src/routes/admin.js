@@ -7,7 +7,7 @@ const InterviewSession = require('../models/InterviewSession');
 // GET /api/admin/users — find all users, exclude password field
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find({}).select('-password');
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
